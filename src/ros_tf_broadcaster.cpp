@@ -2,16 +2,22 @@
 
 namespace rosbridge2cpp{
   void ROSTFBroadcaster::SendTransform(json &geometry_msgs_transformstamped_msg){
-    rapidjson::Document tf_message;
-    auto &allocator = tf_message.GetAllocator();
-    tf_message.SetObject();
-    rapidjson::Value transform_array;
+    assert(geometry_msgs_transformstamped_msg.IsObject());
+
+    rapidjson::Document transform_array;
     transform_array.SetArray();
+    transform_array.PushBack(geometry_msgs_transformstamped_msg, transform_array.GetAllocator());
 
-    // rapidjson::Value transform; transform.SetObject();
-    transform_array.PushBack(geometry_msgs_transformstamped_msg, allocator);
+    SendTransforms(transform_array);
+  }
 
-    tf_message.AddMember("transforms", transform_array, allocator);
+  void ROSTFBroadcaster::SendTransforms(json &geometry_msgs_transformstamped_array_msg){
+    assert(geometry_msgs_transformstamped_array_msg.IsArray());
+
+    rapidjson::Document tf_message;
+    tf_message.SetObject();
+
+    tf_message.AddMember("transforms", geometry_msgs_transformstamped_array_msg, tf_message.GetAllocator());
 
     tf_topic_.Publish(tf_message);
   }

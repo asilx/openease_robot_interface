@@ -244,7 +244,7 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
   // WARNING!
   // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
   // To send the same message multiple times, you have to recreate or copy it!
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 1; i++) {
     unsigned long seconds_since_epoch = 
       std::chrono::duration_cast<std::chrono::seconds>
       (std::chrono::system_clock::now().time_since_epoch()).count();
@@ -268,7 +268,7 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
     single_transform["transform"]["rotation"]["y"].SetDouble(0);
     single_transform["transform"]["rotation"]["z"].SetDouble(0);
     single_transform["transform"]["rotation"]["w"].SetDouble(1);
-    tfb.SendTransform(single_transform);
+    // tfb.SendTransform(single_transform);
 
     json second_transform = ROSMessageFactory::geometry_msgs_transformstamped(alloc.GetAllocator());
     second_transform["header"]["seq"].SetInt(0);
@@ -284,7 +284,13 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
     second_transform["transform"]["rotation"]["y"].SetDouble(0);
     second_transform["transform"]["rotation"]["z"].SetDouble(0);
     second_transform["transform"]["rotation"]["w"].SetDouble(1);
-    tfb.SendTransform(second_transform);
+    // tfb.SendTransform(second_transform);
+    //
+    json transforms;
+    transforms.SetArray();
+    transforms.PushBack(single_transform, transforms.GetAllocator());
+    transforms.PushBack(second_transform, transforms.GetAllocator());
+    tfb.SendTransforms(transforms);
 
 
     // transform_array.PushBack(single_transform, allocator);
