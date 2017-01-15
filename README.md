@@ -18,7 +18,7 @@ make
 ```
 
 ## Usage
-Checkout src/client/client.cpp for an example implementation based on UNIX sockets.
+Checkout [src/client/client.cpp](src/client/client.cpp) for an example implementation based on UNIX sockets.
 On the server-side, please ensure that you're starting the TCP variant of the rosbridge server.
 Websockets are NOT supported.
 
