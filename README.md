@@ -1,4 +1,4 @@
-# rosbridge2cpp
+# rosbridge2cpp [![Build Status](https://travis-ci.org/Sanic/travis-cpp11-test.svg?branch=master)](https://travis-ci.org/Sanic/travis-cpp11-test)
 A C++11 library to interface ROS via rosbridge
 
 This library can be used to talk to [ROS](http://www.ros.org/) via [rosbridge](http://wiki.ros.org/rosbridge_suite).
