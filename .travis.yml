@@ -1,0 +1,13 @@
+sudo: false
+language: cpp
+dist: trusty
+compiler:
+  - clang
+os:
+  - linux
+script:
+  - clang --version
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
