@@ -24,6 +24,7 @@ ADD_EXECUTABLE( rosbridge2cpp-client
 	src/ros_topic.cpp 
 	src/ros_service.cpp 
 	src/ros_tf_broadcaster.cpp 
+	src/ros_time.cpp 
 )
 
 ADD_LIBRARY( rosbridge2cpp SHARED
@@ -32,6 +33,7 @@ ADD_LIBRARY( rosbridge2cpp SHARED
 	src/ros_topic.cpp 
 	src/ros_service.cpp 
 	src/ros_tf_broadcaster.cpp 
+	src/ros_time.cpp 
 )
 
 ################################

@@ -12,6 +12,7 @@
 
 #include "ros_bridge.h"
 #include "ros_topic.h"
+#include "ros_time.h"
 #include "ros_service.h"
 #include "itransport_layer.h"
 #include "client/socket_tcp_connection.h"
@@ -245,19 +246,13 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
   // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
   // To send the same message multiple times, you have to recreate or copy it!
   for (int i = 0; i < 1; i++) {
-    unsigned long seconds_since_epoch = 
-      std::chrono::duration_cast<std::chrono::seconds>
-      (std::chrono::system_clock::now().time_since_epoch()).count();
-    unsigned long long nanoseconds_since_epoch = 
-      std::chrono::duration_cast<std::chrono::nanoseconds>
-      (std::chrono::system_clock::now().time_since_epoch()).count();
-    unsigned long nanosecond_difference = nanoseconds_since_epoch - (seconds_since_epoch * 1000000000ul);
+    ROSTime time = ROSTime::now();
 
     json alloc; // A json document that will only be used to allocate memory in ROSMessageFactory
     json single_transform = ROSMessageFactory::geometry_msgs_transformstamped(alloc.GetAllocator());
     single_transform["header"]["seq"].SetInt(0);
-    single_transform["header"]["stamp"]["secs"].SetUint64(seconds_since_epoch);
-    single_transform["header"]["stamp"]["nsecs"].SetUint64(nanosecond_difference);
+    single_transform["header"]["stamp"]["secs"].SetUint(time.sec_);
+    single_transform["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
     single_transform["header"]["frame_id"].SetString("/world");
     single_transform["child_frame_id"].SetString("/foobar");
     single_transform["transform"]["translation"]["x"].SetDouble(1);
@@ -272,8 +267,8 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
 
     json second_transform = ROSMessageFactory::geometry_msgs_transformstamped(alloc.GetAllocator());
     second_transform["header"]["seq"].SetInt(0);
-    second_transform["header"]["stamp"]["secs"].SetUint64(seconds_since_epoch);
-    second_transform["header"]["stamp"]["nsecs"].SetUint64(nanosecond_difference);
+    second_transform["header"]["stamp"]["secs"].SetUint(time.sec_);
+    second_transform["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
     second_transform["header"]["frame_id"].SetString("/world");
     second_transform["child_frame_id"].SetString("/fasel");
     second_transform["transform"]["translation"]["x"].SetDouble(-1);
