@@ -237,7 +237,6 @@ TEST_F(ROSBridgeTest, CallOwnService) {
   ASSERT_TRUE(testResponseReceived) << "Didn't receive the service response one second after service request";
   test_service_handler.Unadvertise();
 }
-
 TEST_F(ROSBridgeTest, TestTFPublish) {
   ROSTFBroadcaster tfb(ros);
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -245,7 +244,7 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
   // WARNING!
   // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
   // To send the same message multiple times, you have to recreate or copy it!
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 0; i++) {
     ROSTime time = ROSTime::now();
 
     json alloc; // A json document that will only be used to allocate memory in ROSMessageFactory
@@ -299,6 +298,132 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
     // // test_topic.publish(tf_message_to_send);
     // test_topic.publish(tf_message);
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+  // TODO test for success
+}
+
+typedef unsigned char BYTE;
+
+static const std::string base64_chars = 
+             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+             "abcdefghijklmnopqrstuvwxyz"
+             "0123456789+/";
+
+
+// static inline bool is_base64(BYTE c) {
+//   return (isalnum(c) || (c == '+') || (c == '/'));
+// }
+
+std::string base64_encode(BYTE const* buf, unsigned int bufLen) {
+  std::string ret;
+  int i = 0;
+  int j = 0;
+  BYTE char_array_3[3];
+  BYTE char_array_4[4];
+
+  while (bufLen--) {
+    char_array_3[i++] = *(buf++);
+    if (i == 3) {
+      char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+      char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+      char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+      char_array_4[3] = char_array_3[2] & 0x3f;
+
+      for(i = 0; (i <4) ; i++)
+        ret += base64_chars[char_array_4[i]];
+      i = 0;
+    }
+  }
+
+  if (i)
+  {
+    for(j = i; j < 3; j++)
+      char_array_3[j] = '\0';
+
+    char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
+    char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
+    char_array_4[2] = ((char_array_3[1] & 0x0f) << 2) + ((char_array_3[2] & 0xc0) >> 6);
+    char_array_4[3] = char_array_3[2] & 0x3f;
+
+    for (j = 0; (j < i + 1); j++)
+      ret += base64_chars[char_array_4[j]];
+
+    while((i++ < 3))
+      ret += '=';
+  }
+
+  return ret;
+}
+
+// Taken from http://stackoverflow.com/questions/180947/base64-decode-snippet-in-c
+// static std::string base64_encode(const std::string &in) {
+// 
+//     std::string out;
+// 
+//     int val=0, valb=-6;
+//     for (unsigned char c : in) {
+//         val = (val<<8) + c;
+//         valb += 8;
+//         while (valb>=0) {
+//             out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[(val>>valb)&0x3F]);
+//             valb-=6;
+//         }
+//     }
+//     if (valb>-6) out.push_back("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[((val<<8)>>(valb+8))&0x3F]);
+//     while (out.size()%4) out.push_back('=');
+//     return out;
+// }
+
+// Taken from http://stackoverflow.com/questions/180947/base64-decode-snippet-in-c
+// static std::string base64_decode(const std::string &in) {
+// 
+//     std::string out;
+// 
+//     std::vector<int> T(256,-1);
+//     for (int i=0; i<64; i++) T["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"[i]] = i; 
+// 
+//     int val=0, valb=-8;
+//     for (unsigned char c : in) {
+//         if (T[c] == -1) break;
+//         val = (val<<6) + T[c];
+//         valb += 6;
+//         if (valb>=0) {
+//             out.push_back(char((val>>valb)&0xFF));
+//             valb-=8;
+//         }
+//     }
+//     return out;
+// }
+
+
+TEST_F(ROSBridgeTest, PublishImage) {
+  ROSTopic imagetopic(ros, "/imagetest", "sensor_msgs/Image");
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+  // WARNING!
+  // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
+  // To send the same message multiple times, you have to recreate or copy it!
+  for (int i = 0; i < 1; i++) {
+    ROSTime time = ROSTime::now();
+
+    json alloc; // A json document that will only be used to allocate memory in ROSMessageFactory
+    json image_msg = ROSMessageFactory::sensor_msgs_image(alloc.GetAllocator());
+    image_msg["header"]["seq"].SetInt(0);
+    image_msg["header"]["stamp"]["secs"].SetUint(time.sec_);
+    image_msg["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
+    image_msg["header"]["frame_id"].SetString("/camera_frame");
+    image_msg["height"].SetUint(1);
+    image_msg["width"].SetUint(2);
+    image_msg["encoding"].SetString("rgb8");
+    image_msg["step"].SetUint(6);
+    BYTE image[3] = {0,0,0};
+    std::string base64_data = base64_encode(((const BYTE*) &image), 3); // 20,20,20
+
+    image_msg["data"].SetString(base64_data.c_str(), base64_data.length(), alloc.GetAllocator());
+
+    std::cout << "JSON for image" << Helper::get_string_from_rapidjson(image_msg) << std::endl;
+    imagetopic.Publish(image_msg);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
   // TODO test for success
 }

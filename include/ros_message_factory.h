@@ -63,5 +63,20 @@ namespace rosbridge2cpp{
 
         return msg;
       }
+
+      static json sensor_msgs_image(json::AllocatorType& allocator){
+        json msg(rapidjson::kObjectType);
+        msg.AddMember("header", std_msgs_header(allocator), allocator);
+        msg.AddMember("height", (uint32_t) 0 , allocator);
+        msg.AddMember("width", (uint32_t) 0 , allocator);
+        msg.AddMember("encoding", std::string(""), allocator);
+        msg.AddMember("is_bigendian", (uint32_t) 0 , allocator);
+        msg.AddMember("step", (uint32_t) 0 , allocator);
+        msg.AddMember("data", std::string("") , allocator); // uint8[] will be represented as a base64 string in rosbridge
+        // msg.AddMember("child_frame_id", std::string(""), allocator);
+        // msg.AddMember("transform", geometry_msgs_transform(allocator), allocator); 
+
+        return msg;
+      }
   };
 }
