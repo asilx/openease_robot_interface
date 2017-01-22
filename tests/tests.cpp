@@ -127,7 +127,7 @@ public:
 	}
 
   SocketTCPConnection t;
-  ROSBridge ros{t};
+  ROSBridge ros{t,true};
 };
 
 
@@ -170,7 +170,6 @@ TEST_F(ROSBridgeTest, TestTopic) {
   };
 
   wait_for_x_ms_for_y_steps(100, 10, l);
-  test_topic.Unsubscribe(test_callback);
   test_topic.Unadvertise();
   ASSERT_TRUE(testMessageReceived) << "Didn't receive the topic test message one second after publish";
 }

@@ -1,5 +1,6 @@
 #include "client/socket_tcp_connection.h"
 #include <bson.h>
+#include <iomanip>
 
 namespace rosbridge2cpp{
   bool SocketTCPConnection::Init(std::string p_ip_addr, int p_port){
@@ -49,7 +50,12 @@ namespace rosbridge2cpp{
       perror("[TCPConnection] Send failed : ");
       return false;
     }
-    std::cout<<"[TCPConnection] Data send: " << data << "\n";
+    std::cout<<"[TCPConnection] Data send: " << std::endl;
+    for (int i = 0; i < length; i++) {
+      std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex << (int)( data[i] );
+    }
+    std::cout<<"[TCPConnection] Data end" << std::endl;
+    std::cout << std::endl;
     return true;
   }
 
@@ -81,8 +87,16 @@ namespace rosbridge2cpp{
       }
 
       recv_buffer.get()[count] = 0; // null-terminate to handle it like a c-string
-      printf("%.*s", count, recv_buffer.get());
-      std::cout << std::endl;
+      if(bson_only_mode_){
+        for (int i = 0; i < count; i++) {
+          std::cout << "0x" << std::setw(2) << std::setfill('0') << std::hex << (int)( recv_buffer[i] );
+        }
+        std::cout << "[TCPConnection] Received Data end" << std::endl;
+        std::cout << std::endl;
+      }else{
+        // Print the human-readable data
+        printf("%.*s", count, recv_buffer.get());
+      }
 
       // TODO catch parse error properly
       json j;
