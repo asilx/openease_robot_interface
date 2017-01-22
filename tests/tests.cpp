@@ -19,6 +19,7 @@
 #include "helper.h"
 #include "ros_message_factory.h"
 #include "ros_tf_broadcaster.h"
+#include "messages/rosbridge_msg.h"
 
 using json = rapidjson::Document;
 using namespace rosbridge2cpp;
@@ -44,10 +45,10 @@ TEST(IndependentMethod, ResetsToZero) {
 	EXPECT_EQ(0,0);
 }
 
-/*
- * A class containing different methods that implement 
- * the behavior to test
- */
+//
+// A class containing different methods that implement 
+// the behavior to test
+//
 class TestHandlerMethods {
 public:
   TestHandlerMethods () = default;
@@ -169,6 +170,8 @@ TEST_F(ROSBridgeTest, TestTopic) {
   };
 
   wait_for_x_ms_for_y_steps(100, 10, l);
+  test_topic.Unsubscribe(test_callback);
+  test_topic.Unadvertise();
   ASSERT_TRUE(testMessageReceived) << "Didn't receive the topic test message one second after publish";
 }
 
@@ -395,7 +398,7 @@ std::string base64_encode(BYTE const* buf, unsigned int bufLen) {
 //     return out;
 // }
 
-
+/*
 TEST_F(ROSBridgeTest, PublishImage) {
   ROSTopic imagetopic(ros, "/imagetest", "sensor_msgs/Image");
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -427,3 +430,55 @@ TEST_F(ROSBridgeTest, PublishImage) {
   }
   // TODO test for success
 }
+*/
+/*
+
+ TEST(IndependentMethod, test_binary) {
+  SocketTCPConnection t;
+  // ROSBridge ros{t, true};
+  ROSBridge ros{t};
+  ros.Init("192.168.178.61", 9090);
+
+  {
+    json d(rapidjson::kObjectType);
+    auto &alloc = d.GetAllocator();
+    d.AddMember("op","subscribe", alloc);
+    d.AddMember("topic","/test", alloc);
+    d.AddMember("type","std_msgs/String", alloc);
+    ros.SendMessage(d);
+  }
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  {
+    json d(rapidjson::kObjectType);
+    auto &alloc = d.GetAllocator();
+    d.AddMember("op","advertise", alloc);
+    d.AddMember("topic","/test", alloc);
+    d.AddMember("type","std_msgs/String", alloc);
+    ros.SendMessage(d);
+  }
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+  for (int i = 0; i < 100; i++) {
+    {
+      json d(rapidjson::kObjectType);
+      json message(rapidjson::kObjectType);
+      auto &alloc = d.GetAllocator();
+      d.AddMember("op","publish", alloc);
+      d.AddMember("topic","/test", alloc);
+      d.AddMember("type","std_msgs/String", alloc);
+      message.AddMember("data","Hi from BSON",alloc);
+      d.AddMember("msg",message,alloc);
+
+      ros.SendMessage(d);
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  }
+
+// {"op":"subscribe","id":"subscribe:/test:1","topic":"/test","type":"std_msgs/String","compression":"none","throttle_rate":0,"queue_length":0}
+// {"op":"advertise","id":"advertise:/test:2","topic":"/test","type":"std_msgs/String","latch":false,"queue_size":100}
+// {"op":"publish","id":"publish:/test:3","topic":"/test","msg":{"data":"Publish from Unit-Tests"},"latch":false}
+
+  
+	EXPECT_EQ(0,0);
+}
+*/

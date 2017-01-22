@@ -32,6 +32,9 @@ namespace rosbridge2cpp{
       ROSBridge(ITransportLayer &transport) : transport_layer_(transport){
       }
 
+      ROSBridge(ITransportLayer &transport, bool bson_only_mode) : transport_layer_(transport), bson_only_mode_(bson_only_mode){
+      }
+
       // Init the underlying transport layer and everything thats required
       // to initialized in this class.
       bool Init(std::string ip_addr, int port);
@@ -43,6 +46,7 @@ namespace rosbridge2cpp{
       // by serializing it and using
       // ROSBridge::send_message(std::string data)
       bool SendMessage(json &data);
+
 
       // Registration function for topic callbacks.
       // This method should ONLY be called by ROSTopic instances.
@@ -94,6 +98,7 @@ namespace rosbridge2cpp{
       std::unordered_map<std::string, std::list<FunVcrJSON>> registered_topic_callbacks_;
       std::unordered_map<std::string, FunVcrJSON> registered_service_callbacks_;
       std::unordered_map<std::string, FunJSONcrJSON> registered_service_request_callbacks_;
+      bool bson_only_mode_ = false;
 
       template<typename T>
         size_t get_address(std::function<void (T &)> f) {

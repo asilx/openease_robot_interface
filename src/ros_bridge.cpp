@@ -1,5 +1,6 @@
 #include "ros_bridge.h"
 #include "ros_topic.h"
+#include <bson.h>
 
 namespace rosbridge2cpp{
   bool ROSBridge::SendMessage(std::string data){
@@ -7,8 +8,28 @@ namespace rosbridge2cpp{
   }
 
   bool ROSBridge::SendMessage(json &data){
-    std::string str_repr = Helper::get_string_from_rapidjson(data); 
-    return SendMessage(str_repr);
+    if(bson_only_mode_){
+      // going from JSON to BSON
+      std::string str_repr = Helper::get_string_from_rapidjson(data); 
+      std::cout << "[ROSBridge] serializing from JSON to BSON for: " << str_repr << std::endl;
+      // return transport_layer_.SendMessage(data,length);
+      
+      bson_t bson;
+      bson_error_t error;
+      if (!bson_init_from_json(&bson, str_repr.c_str(), -1, &error)) {
+        printf("bson_init_from_json() failed: %s\n", error.message);
+        bson_destroy(&bson);
+        return false;
+      }
+      const uint8_t *bson_data = bson_get_data (&bson);
+      uint32_t bson_size = bson.len;
+      bool retval = transport_layer_.SendMessage(bson_data,bson_size);
+      bson_destroy(&bson);
+      return retval;
+    }else{
+      std::string str_repr = Helper::get_string_from_rapidjson(data); 
+      return SendMessage(str_repr);
+    }
   }
 
   void ROSBridge::HandleIncomingPublishMessage(json &data){
@@ -143,6 +164,8 @@ namespace rosbridge2cpp{
 
   bool ROSBridge::Init(std::string ip_addr, int port){
     std::function<void(json&)> fun = std::bind(&ROSBridge::IncomingMessageCallback, this, std::placeholders::_1);
+    if(bson_only_mode_)
+      transport_layer_.SetTransportMode(ITransportLayer::BSON);
 
     transport_layer_.RegisterIncomingMessageCallback(fun);
     return transport_layer_.Init(ip_addr,port);
