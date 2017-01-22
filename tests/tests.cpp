@@ -397,7 +397,7 @@ std::string base64_encode(BYTE const* buf, unsigned int bufLen) {
 //     return out;
 // }
 
-/*
+
 TEST_F(ROSBridgeTest, PublishImage) {
   ROSTopic imagetopic(ros, "/imagetest", "sensor_msgs/Image");
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -418,7 +418,7 @@ TEST_F(ROSBridgeTest, PublishImage) {
     image_msg["width"].SetUint(2);
     image_msg["encoding"].SetString("rgb8");
     image_msg["step"].SetUint(6);
-    BYTE image[3] = {0,0,0};
+    BYTE image[3] = {0,1,2};
     std::string base64_data = base64_encode(((const BYTE*) &image), 3); // 20,20,20
 
     image_msg["data"].SetString(base64_data.c_str(), base64_data.length(), alloc.GetAllocator());
@@ -429,9 +429,9 @@ TEST_F(ROSBridgeTest, PublishImage) {
   }
   // TODO test for success
 }
-*/
-/*
 
+
+/*
  TEST(IndependentMethod, test_binary) {
   SocketTCPConnection t;
   // ROSBridge ros{t, true};
