@@ -50,8 +50,22 @@ public:
     return true;
   }
 
+  rapidjson::Document ToJSON(rapidjson::Document::AllocatorType& alloc){
+    rapidjson::Document d(rapidjson::kObjectType);
+    d.AddMember("op",getOpCodeString(),alloc);
+    add_if_value_changed(d, alloc, "id", id_);
+    add_if_value_changed(d, alloc, "service", service_);
+
+
+    d.AddMember("result", result_, alloc);
+
+    if( !values_json_.IsNull() )
+      d.AddMember("values", values_json_, alloc);
+    return d;
+  }
+
   std::string service_;
-  bool result_;
+  bool result_ = false;
   // The json data in the different wire-level representations
   rapidjson::Value values_json_;
 

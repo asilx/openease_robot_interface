@@ -36,7 +36,7 @@ public:
   std::unordered_map<std::string, OpCode> op_code_mapping = { 
     {"fragment", FRAGMENT}, 
     {"png", PNG},
-    {"set_level", PNG},
+    {"set_level", SET_LEVEL},
     {"status", STATUS},
     {"auth", AUTH},
     {"advertise", ADVERTISE},
@@ -49,6 +49,24 @@ public:
     {"call_service", CALL_SERVICE},
     {"service_response", SERVICE_RESPONSE}
   };
+
+  // std::unordered_map<OpCode, std::string> reverse_op_code_mapping = { 
+  //   {OPCODE_UNDEFINED,"opcode_undefined"}, 
+  //   {FRAGMENT,"fragment"}, 
+  //   {PNG,"png"},
+  //   {SET_LEVEL,"set_level"},
+  //   {STATUS, "status"},
+  //   {AUTH, "auth"},
+  //   {ADVERTISE, "advertise"},
+  //   {UNADVERTISE, "unadvertise"},
+  //   {PUBLISH, "publish"},
+  //   {SUBSCRIBE, "subscribe"},
+  //   {UNSUBSCRIBE, "unsubscribe"},
+  //   {ADVERTISE_SERVICE, "advertise_service"},
+  //   {UNADVERTISE_SERVICE, "unadvertise_service"},
+  //   {CALL_SERVICE, "call_service"},
+  //   {SERVICE_RESPONSE, "service_response"}
+  // };
 
   ROSBridgeMsg () = default;
 
@@ -83,8 +101,42 @@ public:
   }
   virtual ~ROSBridgeMsg () = default;
 
+  virtual rapidjson::Document ToJSON(rapidjson::Document::AllocatorType& alloc) = 0;
+
   OpCode op_ = OPCODE_UNDEFINED;
   std::string id_ = "";
+
+  std::string getOpCodeString(){
+    if(op_ == OPCODE_UNDEFINED) return "opcode_undefined";
+    if(op_ == FRAGMENT) return "fragment";
+    if(op_ == PNG) return "png";
+    if(op_ == SET_LEVEL) return "set_level";
+    if(op_ == STATUS) return  "status";
+    if(op_ == AUTH) return  "auth";
+    if(op_ == ADVERTISE) return  "advertise";
+    if(op_ == UNADVERTISE) return  "unadvertise";
+    if(op_ == PUBLISH) return  "publish";
+    if(op_ == SUBSCRIBE) return  "subscribe";
+    if(op_ == UNSUBSCRIBE) return  "unsubscribe";
+    if(op_ == ADVERTISE_SERVICE) return  "advertise_service";
+    if(op_ == UNADVERTISE_SERVICE) return  "unadvertise_service";
+    if(op_ == CALL_SERVICE) return  "call_service";
+    if(op_ == SERVICE_RESPONSE) return  "service_response";
+    return "";
+  }
+
+protected:
+  // key must be valid as long as 'd' lives!
+  void add_if_value_changed(rapidjson::Document &d, rapidjson::Document::AllocatorType& alloc, const char* key, std::string value){
+    if( !value.empty() )
+      d.AddMember(rapidjson::StringRef(key),value,alloc);
+  }
+
+  void add_if_value_changed(rapidjson::Document &d, rapidjson::Document::AllocatorType& alloc, const char* key, int value){
+    if( value != -1 )
+      d.AddMember(rapidjson::StringRef(key),value,alloc);
+  }
+
 
 
 private:

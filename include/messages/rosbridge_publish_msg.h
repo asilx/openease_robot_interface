@@ -15,7 +15,7 @@ public:
       op_ = ROSBridgeMsg::PUBLISH;
   }
 
-  virtual ~ROSBridgePublishMsg () = default;
+  // virtual ~ROSBridgePublishMsg () = default;
 
   // Warning: This conversion moves the 'msg' field
   // out of the given JSON data into this class
@@ -44,12 +44,29 @@ public:
     return true;
   }
 
+  rapidjson::Document ToJSON(rapidjson::Document::AllocatorType& alloc){
+    rapidjson::Document d(rapidjson::kObjectType);
+    d.AddMember("op",getOpCodeString(),alloc);
+
+    add_if_value_changed(d, alloc, "id", id_);
+    add_if_value_changed(d, alloc, "topic", topic_);
+    add_if_value_changed(d, alloc, "type", type_);
+
+
+    d.AddMember("latch", latch_, alloc);
+
+    if( !msg_json_.IsNull() )
+      d.AddMember("msg", msg_json_, alloc);
+
+    return d;
+  }
+
   std::string topic_;
   std::string type_;
   // std::string compression_;
   // std::string throttle_rate_;
   // std::string queue_length_;
-  std::string latch_;
+  bool latch_ = false;
 
   // The json data in the different wire-level representations
   rapidjson::Value msg_json_;

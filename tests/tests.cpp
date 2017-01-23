@@ -537,10 +537,193 @@ TEST(IndependentMethod, ROSBridgeServiceResponseFromJSON) {
 
   std::cout << Helper::get_string_from_rapidjson(d);
 
-  EXPECT_EQ(sr.op_,ROSBridgeMsg::SERVICE_RESPONSE);
-  EXPECT_EQ(sr.id_,"testingid");
-  EXPECT_EQ(sr.service_,"testservice");
-  EXPECT_EQ(sr.values_json_["param"].GetString(),"one");
-  EXPECT_EQ(sr.result_,true);
+  ASSERT_EQ(sr.op_,ROSBridgeMsg::SERVICE_RESPONSE);
+  ASSERT_EQ(sr.id_,"testingid");
+  ASSERT_EQ(sr.service_,"testservice");
+  ASSERT_STREQ(sr.values_json_["param"].GetString(),"one");
+  ASSERT_EQ(sr.result_,true);
+}
+
+TEST(IndependentMethod, ROSBridgeAdvertiseMsgToJSON) {
+  ROSBridgeAdvertiseMsg rosmsg(true);
+  // a.op_ = ROSBridgeMsg::ADVERTISE;
+  rosmsg.id_ = "id";
+  rosmsg.topic_ = "topic";
+  rosmsg.type_ = "type";
+
+  json alloc;
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"advertise");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["topic"].GetString(),"topic");
+  ASSERT_STREQ(message["type"].GetString(),"type");
+}
+
+TEST(IndependentMethod, ROSBridgeAdvertiseServiceToJSON) {
+  ROSBridgeAdvertiseServiceMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.service_ = "service";
+  rosmsg.type_ = "type";
+
+  json alloc;
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"advertise_service");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["service"].GetString(),"service");
+  ASSERT_STREQ(message["type"].GetString(),"type");
+}
+
+TEST(IndependentMethod, ROSBridgeCallServiceToJSON) {
+  ROSBridgeCallServiceMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.service_ = "service";
+  
+  json alloc;
+
+  rapidjson::Value args(rapidjson::kObjectType);
+
+  args.AddMember("a","1",alloc.GetAllocator());
+  args.AddMember("b","2",alloc.GetAllocator());
+
+  rosmsg.args_json_ = args;
+
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"call_service");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["service"].GetString(),"service");
+  ASSERT_STREQ(message["args"]["a"].GetString(),"1");
+  ASSERT_STREQ(message["args"]["b"].GetString(),"2");
+}
+
+TEST(IndependentMethod, ROSBridgePublishToJSON) {
+  ROSBridgePublishMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.topic_ = "topic";
+  rosmsg.type_ = "type";
+  rosmsg.latch_ = true;
+  
+  json alloc;
+
+  rapidjson::Value msg(rapidjson::kObjectType);
+
+  msg.AddMember("data","text",alloc.GetAllocator());
+
+  rosmsg.msg_json_ = msg;
+
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"publish");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["topic"].GetString(),"topic");
+  ASSERT_STREQ(message["type"].GetString(),"type");
+  ASSERT_STREQ(message["msg"]["data"].GetString(),"text");
+}
+
+TEST(IndependentMethod, ROSBridgeServiceResponseToJSON) {
+  ROSBridgeServiceResponseMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.service_ = "service";
+  rosmsg.result_ = true;
+  
+  json alloc;
+
+  rapidjson::Value values(rapidjson::kObjectType);
+
+  values.AddMember("a","b",alloc.GetAllocator());
+
+  rosmsg.values_json_ = values;
+
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"service_response");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["service"].GetString(),"service");
+  ASSERT_EQ(message["result"].GetBool(),true);
+  ASSERT_STREQ(message["values"]["a"].GetString(),"b");
+}
+
+TEST(IndependentMethod, ROSBridgeSubscribeToJSON) {
+  ROSBridgeSubscribeMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.topic_ = "topic";
+  rosmsg.type_ = "type";
+  rosmsg.queue_length_ = 23;
+  rosmsg.throttle_rate_ = 42;
+  rosmsg.compression_ = "compression";
+
+  json alloc;
+
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"subscribe");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["topic"].GetString(),"topic");
+  ASSERT_STREQ(message["type"].GetString(),"type");
+  ASSERT_EQ(message["queue_length"].GetInt(),23);
+  ASSERT_EQ(message["throttle_rate"].GetInt(),42);
+  ASSERT_STREQ(message["compression"].GetString(),"compression");
+}
+
+TEST(IndependentMethod, ROSBridgeUnadvertiseToJSON) {
+  ROSBridgeUnadvertiseMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.topic_ = "topic";
+
+  json alloc;
+
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"unadvertise");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["topic"].GetString(),"topic");
+}
+
+TEST(IndependentMethod, ROSBridgeUnadvertiseServiceToJSON) {
+  ROSBridgeUnadvertiseServiceMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.service_ = "service";
+
+  json alloc;
+
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"unadvertise_service");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["service"].GetString(),"service");
+}
+
+TEST(IndependentMethod, ROSBridgeUnsubscribeToJSON) {
+  ROSBridgeUnsubscribeMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.topic_ = "topic";
+
+  json alloc;
+
+  json message = rosmsg.ToJSON(alloc.GetAllocator());
+
+  std::cout << Helper::get_string_from_rapidjson(message);
+
+  ASSERT_STREQ(message["op"].GetString(),"unsubscribe");
+  ASSERT_STREQ(message["id"].GetString(),"id");
+  ASSERT_STREQ(message["topic"].GetString(),"topic");
 }
 

@@ -17,6 +17,17 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+#include "messages/rosbridge_advertise_msg.h"
+#include "messages/rosbridge_advertise_service_msg.h"
+#include "messages/rosbridge_call_service_msg.h"
+#include "messages/rosbridge_msg.h"
+#include "messages/rosbridge_publish_msg.h"
+#include "messages/rosbridge_service_response_msg.h"
+#include "messages/rosbridge_subscribe_msg.h"
+#include "messages/rosbridge_unadvertise_msg.h"
+#include "messages/rosbridge_unadvertise_service_msg.h"
+#include "messages/rosbridge_unsubscribe_msg.h"
+
 using json = rapidjson::Document;
 
 namespace rosbridge2cpp{
@@ -46,6 +57,8 @@ namespace rosbridge2cpp{
       // by serializing it and using
       // ROSBridge::send_message(std::string data)
       bool SendMessage(json &data);
+
+      bool SendMessage(ROSBridgeMsg &msg);
 
 
       // Registration function for topic callbacks.

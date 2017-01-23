@@ -32,6 +32,35 @@ namespace rosbridge2cpp{
     }
   }
 
+  bool ROSBridge::SendMessage(ROSBridgeMsg &msg){
+    // Get the real message instance
+
+
+    if(bson_only_mode_){
+      // // going from JSON to BSON
+      // std::string str_repr = Helper::get_string_from_rapidjson(data); 
+      // std::cout << "[ROSBridge] serializing from JSON to BSON for: " << str_repr << std::endl;
+      // // return transport_layer_.SendMessage(data,length);
+      // 
+      // bson_t bson;
+      // bson_error_t error;
+      // if (!bson_init_from_json(&bson, str_repr.c_str(), -1, &error)) {
+      //   printf("bson_init_from_json() failed: %s\n", error.message);
+      //   bson_destroy(&bson);
+      //   return false;
+      // }
+      // const uint8_t *bson_data = bson_get_data (&bson);
+      // uint32_t bson_size = bson.len;
+      // bool retval = transport_layer_.SendMessage(bson_data,bson_size);
+      // bson_destroy(&bson);
+      std::cerr << "Not implemented" << std::endl;
+      return false;
+    }
+    // std::string str_repr = Helper::get_string_from_rapidjson(data); 
+    // return SendMessage(str_repr);
+    return false;
+  }
+
   void ROSBridge::HandleIncomingPublishMessage(json &data){
     //Incoming topic message - dispatch to correct callback
     if (!data.HasMember("topic")){
