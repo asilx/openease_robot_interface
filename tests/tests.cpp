@@ -19,7 +19,11 @@
 #include "helper.h"
 #include "ros_message_factory.h"
 #include "ros_tf_broadcaster.h"
+
 #include "messages/rosbridge_msg.h"
+#include "messages/rosbridge_publish_msg.h"
+#include "messages/rosbridge_call_service_msg.h"
+#include "messages/rosbridge_service_response_msg.h"
 
 using json = rapidjson::Document;
 using namespace rosbridge2cpp;
@@ -40,10 +44,6 @@ using namespace rosbridge2cpp;
  *    rosb2_cpp_port = The port of the rosbridge server. Usually, it's 9090.
  */
 
-
-TEST(IndependentMethod, ResetsToZero) {
-	EXPECT_EQ(0,0);
-}
 
 //
 // A class containing different methods that implement 
@@ -127,7 +127,8 @@ public:
 	}
 
   SocketTCPConnection t;
-  ROSBridge ros{t,true};
+  // ROSBridge ros{t,true};
+  ROSBridge ros{t};
 };
 
 
@@ -481,3 +482,65 @@ TEST_F(ROSBridgeTest, PublishImage) {
 	EXPECT_EQ(0,0);
 }
 */
+
+TEST(IndependentMethod, ROSBridgePublishMsgFromJSON) {
+  ROSBridgePublishMsg pm;
+  json d(rapidjson::kObjectType);
+  json message(rapidjson::kObjectType);
+  auto &alloc = d.GetAllocator();
+  d.AddMember("op","publish", alloc);
+  d.AddMember("topic","/test", alloc);
+  d.AddMember("type","std_msgs/String", alloc);
+  message.AddMember("data","Hi from Test",alloc);
+  d.AddMember("msg",message,alloc);
+  pm.FromJSON(d);
+
+  std::cout << Helper::get_string_from_rapidjson(d);
+
+  EXPECT_EQ(pm.op_,ROSBridgeMsg::PUBLISH);
+  EXPECT_EQ(pm.topic_,"/test");
+  EXPECT_EQ(pm.msg_json_["data"].GetString(),"Hi from Test");
+}
+
+TEST(IndependentMethod, ROSBridgeCallServiceFromJSON) {
+  ROSBridgeCallServiceMsg cs;
+  json d(rapidjson::kObjectType);
+  json message(rapidjson::kObjectType);
+  auto &alloc = d.GetAllocator();
+  d.AddMember("op","call_service", alloc);
+  d.AddMember("id","testingid", alloc);
+  d.AddMember("service","testservice", alloc);
+  message.AddMember("param","one",alloc);
+  d.AddMember("args",message,alloc);
+  cs.FromJSON(d);
+
+  std::cout << Helper::get_string_from_rapidjson(d);
+
+  EXPECT_EQ(cs.op_,ROSBridgeMsg::CALL_SERVICE);
+  EXPECT_EQ(cs.id_,"testingid");
+  EXPECT_EQ(cs.service_,"testservice");
+  EXPECT_EQ(cs.args_json_["param"].GetString(),"one");
+}
+
+TEST(IndependentMethod, ROSBridgeServiceResponseFromJSON) {
+  ROSBridgeServiceResponseMsg sr;
+  json d(rapidjson::kObjectType);
+  json message(rapidjson::kObjectType);
+  auto &alloc = d.GetAllocator();
+  d.AddMember("op","service_response", alloc);
+  d.AddMember("id","testingid", alloc);
+  d.AddMember("service","testservice", alloc);
+  message.AddMember("param","one",alloc);
+  d.AddMember("values",message,alloc);
+  d.AddMember("result",true,alloc);
+  sr.FromJSON(d);
+
+  std::cout << Helper::get_string_from_rapidjson(d);
+
+  EXPECT_EQ(sr.op_,ROSBridgeMsg::SERVICE_RESPONSE);
+  EXPECT_EQ(sr.id_,"testingid");
+  EXPECT_EQ(sr.service_,"testservice");
+  EXPECT_EQ(sr.values_json_["param"].GetString(),"one");
+  EXPECT_EQ(sr.result_,true);
+}
+
