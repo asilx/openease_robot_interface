@@ -6,6 +6,9 @@
 
 #include "ros_bridge.h"
 #include "types.h"
+#include "messages/rosbridge_advertise_service_msg.h"
+#include "messages/rosbridge_call_service_msg.h"
+#include "messages/rosbridge_unadvertise_service_msg.h"
 
 using json = rapidjson::Document;
 
@@ -40,7 +43,7 @@ namespace rosbridge2cpp{
       // has been received by ROSBridge. It will passed the received data to the callback.
       // The whole content of the "request" parameter will be send as the "args"
       // argument of the Service Request
-      void CallService(json &request, FunVcrJSON callback);
+      void CallService(rapidjson::Value &request, FunVcrJSON callback);
 
       std::string ServiceName(){
         return service_name_;

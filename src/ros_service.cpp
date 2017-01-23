@@ -1,7 +1,7 @@
 #include "ros_service.h"
 
 namespace rosbridge2cpp{
-  void ROSService::CallService(json &request, FunVcrJSON callback){
+  void ROSService::CallService(rapidjson::Value &request, FunVcrJSON callback){
     if(is_advertised_) // You can't use an advertised ROSService instance to call services. 
       return;         // Use a separate instance
 
@@ -14,12 +14,10 @@ namespace rosbridge2cpp{
     // Register the callback with the given call id in the ROSBridge
     ros_.RegisterServiceCallback(service_call_id, callback);
 
-    rapidjson::Document cmd;
-    cmd.SetObject();
-    cmd.AddMember("op","call_service", cmd.GetAllocator());
-    cmd.AddMember("id",service_call_id, cmd.GetAllocator());
-    cmd.AddMember("service",service_name_, cmd.GetAllocator());
-    cmd.AddMember("args", request, cmd.GetAllocator());
+    ROSBridgeCallServiceMsg cmd(true);
+    cmd.id_ = service_call_id;
+    cmd.service_ = service_name_;
+    cmd.args_json_ =  request;
 
     ros_.SendMessage(cmd);
   }
@@ -31,11 +29,9 @@ namespace rosbridge2cpp{
     // Register on ROSBridge
     ros_.RegisterServiceRequestCallback(service_name_, callback);
 
-    rapidjson::Document cmd;
-    cmd.SetObject();
-    cmd.AddMember("op","advertise_service", cmd.GetAllocator());
-    cmd.AddMember("service",service_name_, cmd.GetAllocator());
-    cmd.AddMember("type", service_type_, cmd.GetAllocator());
+    ROSBridgeAdvertiseServiceMsg cmd(true);
+    cmd.service_ = service_name_;
+    cmd.type_ =  service_type_;
 
     ros_.SendMessage(cmd);
 
@@ -48,10 +44,8 @@ namespace rosbridge2cpp{
     if(!is_advertised_) 
       return;
 
-    rapidjson::Document cmd;
-    cmd.SetObject();
-    cmd.AddMember("op","unadvertise_service", cmd.GetAllocator());
-    cmd.AddMember("service",service_name_, cmd.GetAllocator());
+    ROSBridgeUnadvertiseServiceMsg cmd(true);
+    cmd.service_ = service_name_;
 
     ros_.SendMessage(cmd);
 
