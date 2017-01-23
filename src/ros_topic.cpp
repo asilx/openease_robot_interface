@@ -90,29 +90,29 @@ namespace rosbridge2cpp{
 
     is_advertised_ = false;
   }
-  void ROSTopic::Publish(json &message){
-    if(!is_advertised_)
-      Advertise();
+  // void ROSTopic::Publish(json &message){
+  //   if(!is_advertised_)
+  //     Advertise();
 
-    std::string publish_id;
-    publish_id.append("publish:");
-    publish_id.append(topic_name_);
-    publish_id.append(":");
-    publish_id.append(std::to_string(++ros_.id_counter));
+  //   std::string publish_id;
+  //   publish_id.append("publish:");
+  //   publish_id.append(topic_name_);
+  //   publish_id.append(":");
+  //   publish_id.append(std::to_string(++ros_.id_counter));
 
-    rapidjson::Document cmd;
-    cmd.SetObject();
-    cmd.AddMember("op","publish", cmd.GetAllocator());
-    cmd.AddMember("id", publish_id, cmd.GetAllocator());
-    cmd.AddMember("topic", topic_name_, cmd.GetAllocator());
-    cmd.AddMember("msg", message, cmd.GetAllocator());
-    cmd.AddMember("latch", latch_, cmd.GetAllocator());
+  //   rapidjson::Document cmd;
+  //   cmd.SetObject();
+  //   cmd.AddMember("op","publish", cmd.GetAllocator());
+  //   cmd.AddMember("id", publish_id, cmd.GetAllocator());
+  //   cmd.AddMember("topic", topic_name_, cmd.GetAllocator());
+  //   cmd.AddMember("msg", message, cmd.GetAllocator());
+  //   cmd.AddMember("latch", latch_, cmd.GetAllocator());
 
-    std::cout << "[ROSTopic] Publishing data " << Helper::get_string_from_rapidjson(cmd);
+  //   std::cout << "[ROSTopic] Publishing data " << Helper::get_string_from_rapidjson(cmd);
 
 
-    ros_.SendMessage(cmd);
-  }
+  //   ros_.SendMessage(cmd);
+  // }
 
   void ROSTopic::Publish(rapidjson::Value &message){
     if(!is_advertised_)

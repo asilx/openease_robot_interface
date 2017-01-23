@@ -53,8 +53,14 @@ namespace rosbridge2cpp{
       // If advertise() has not been called before, this will be done in this method beforehand.
       // Please make sure that the message matches the type of the topic,
       // since this will NOT be valided before sending it to the rosbridge.
-      void Publish(json &message);
+      //
+      // @deprecated, use void Publish(rapidjson::Value &message);
+      // void Publish(json &message);
 
+      // Publish a message over this topic.
+      // If advertise() has not been called before, this will be done in this method beforehand.
+      // Please make sure that the message matches the type of the topic,
+      // since this will NOT be valided before sending it to the rosbridge.
       void Publish(rapidjson::Value &message);
 
       std::string TopicName(){
