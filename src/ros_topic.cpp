@@ -15,15 +15,13 @@ namespace rosbridge2cpp{
     subscribe_id_.append(":");
     subscribe_id_.append(std::to_string(++ros_.id_counter));
 
-    rapidjson::Document cmd;
-    cmd.SetObject();
-    cmd.AddMember("op","subscribe", cmd.GetAllocator());
-    cmd.AddMember("id",subscribe_id_, cmd.GetAllocator());
-    cmd.AddMember("topic", topic_name_, cmd.GetAllocator());
-    cmd.AddMember("type", message_type_, cmd.GetAllocator());
-    cmd.AddMember("compression", compression_, cmd.GetAllocator());
-    cmd.AddMember("throttle_rate", throttle_rate_, cmd.GetAllocator());
-    cmd.AddMember("queue_length", queue_length_, cmd.GetAllocator());
+    ROSBridgeSubscribeMsg cmd(true);
+    cmd.id_ = subscribe_id_;
+    cmd.topic_ = topic_name_;
+    cmd.type_ = message_type_;
+    cmd.compression_ = compression_;
+    cmd.throttle_rate_ = throttle_rate_;
+    cmd.queue_length_ = queue_length_;
 
     ros_.SendMessage(cmd);
   }
@@ -46,11 +44,12 @@ namespace rosbridge2cpp{
 
     std::cout << "[ROSTopic] No callbacks registered anymore - unsubscribe from topic" << std::endl;
     // Handle unsubscription when no callback is registered anymore
-    rapidjson::Document cmd;
-    cmd.SetObject();
-    cmd.AddMember("op","unsubscribe", cmd.GetAllocator());
-    cmd.AddMember("id",subscribe_id_, cmd.GetAllocator());
-    cmd.AddMember("topic", topic_name_, cmd.GetAllocator());
+    // rapidjson::Document cmd;
+    // cmd.SetObject();
+
+    ROSBridgeUnsubscribeMsg cmd(true);
+    cmd.id_ = subscribe_id_;
+    cmd.topic_ =  topic_name_;
 
     ros_.SendMessage(cmd);
 
@@ -68,14 +67,12 @@ namespace rosbridge2cpp{
     advertise_id_.append(":");
     advertise_id_.append(std::to_string(++ros_.id_counter));
 
-    rapidjson::Document cmd;
-    cmd.SetObject();
-    cmd.AddMember("op","advertise", cmd.GetAllocator());
-    cmd.AddMember("id",advertise_id_, cmd.GetAllocator());
-    cmd.AddMember("topic", topic_name_, cmd.GetAllocator());
-    cmd.AddMember("type", message_type_, cmd.GetAllocator());
-    cmd.AddMember("latch", latch_, cmd.GetAllocator());
-    cmd.AddMember("queue_size", queue_size_, cmd.GetAllocator());
+    ROSBridgeAdvertiseMsg cmd(true);
+    cmd.id_ = advertise_id_;
+    cmd.topic_ =  topic_name_;
+    cmd.type_ =  message_type_;
+    cmd.latch_ =  latch_;
+    cmd.queue_size_ =  queue_size_;
 
     ros_.SendMessage(cmd);
 
@@ -85,11 +82,9 @@ namespace rosbridge2cpp{
     if(!is_advertised_)
       return;
 
-    rapidjson::Document cmd;
-    cmd.SetObject();
-    cmd.AddMember("op","unadvertise", cmd.GetAllocator());
-    cmd.AddMember("id",advertise_id_, cmd.GetAllocator());
-    cmd.AddMember("topic", topic_name_, cmd.GetAllocator());
+    ROSBridgeUnadvertiseMsg cmd(true);
+    cmd.id_ = advertise_id_;
+    cmd.topic_ =  topic_name_;
 
     ros_.SendMessage(cmd);
 
@@ -115,6 +110,25 @@ namespace rosbridge2cpp{
 
     std::cout << "[ROSTopic] Publishing data " << Helper::get_string_from_rapidjson(cmd);
 
+
+    ros_.SendMessage(cmd);
+  }
+
+  void ROSTopic::Publish(rapidjson::Value &message){
+    if(!is_advertised_)
+      Advertise();
+
+    std::string publish_id;
+    publish_id.append("publish:");
+    publish_id.append(topic_name_);
+    publish_id.append(":");
+    publish_id.append(std::to_string(++ros_.id_counter));
+
+    ROSBridgePublishMsg cmd(true);
+    cmd.id_ =  publish_id;
+    cmd.topic_ =  topic_name_;
+    cmd.msg_json_ =  message;
+    cmd.latch_ =  latch_;
 
     ros_.SendMessage(cmd);
   }

@@ -33,8 +33,6 @@ namespace rosbridge2cpp{
   }
 
   bool ROSBridge::SendMessage(ROSBridgeMsg &msg){
-    // Get the real message instance
-
 
     if(bson_only_mode_){
       // // going from JSON to BSON
@@ -56,9 +54,15 @@ namespace rosbridge2cpp{
       std::cerr << "Not implemented" << std::endl;
       return false;
     }
-    // std::string str_repr = Helper::get_string_from_rapidjson(data); 
-    // return SendMessage(str_repr);
-    return false;
+
+
+    // Convert ROSBridgeMsg to JSON
+    json alloc;
+    json message = msg.ToJSON(alloc.GetAllocator());
+
+    std::string str_repr = Helper::get_string_from_rapidjson(message); 
+    return SendMessage(str_repr);
+    // return false;
   }
 
   void ROSBridge::HandleIncomingPublishMessage(json &data){

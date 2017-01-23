@@ -99,12 +99,6 @@ public:
 
     return true;
   }
-  virtual ~ROSBridgeMsg () = default;
-
-  virtual rapidjson::Document ToJSON(rapidjson::Document::AllocatorType& alloc) = 0;
-
-  OpCode op_ = OPCODE_UNDEFINED;
-  std::string id_ = "";
 
   std::string getOpCodeString(){
     if(op_ == OPCODE_UNDEFINED) return "opcode_undefined";
@@ -125,6 +119,13 @@ public:
     return "";
   }
 
+  virtual ~ROSBridgeMsg () = default;
+
+  virtual rapidjson::Document ToJSON(rapidjson::Document::AllocatorType& alloc) = 0;
+
+  OpCode op_ = OPCODE_UNDEFINED;
+  std::string id_ = "";
+
 protected:
   // key must be valid as long as 'd' lives!
   void add_if_value_changed(rapidjson::Document &d, rapidjson::Document::AllocatorType& alloc, const char* key, std::string value){
@@ -132,12 +133,11 @@ protected:
       d.AddMember(rapidjson::StringRef(key),value,alloc);
   }
 
+  // key must be valid as long as 'd' lives!
   void add_if_value_changed(rapidjson::Document &d, rapidjson::Document::AllocatorType& alloc, const char* key, int value){
     if( value != -1 )
       d.AddMember(rapidjson::StringRef(key),value,alloc);
   }
-
-
 
 private:
   /* data */

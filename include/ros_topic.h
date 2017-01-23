@@ -7,6 +7,11 @@
 #include "ros_bridge.h"
 #include "types.h"
 #include "helper.h"
+#include "messages/rosbridge_advertise_msg.h"
+#include "messages/rosbridge_publish_msg.h"
+#include "messages/rosbridge_subscribe_msg.h"
+#include "messages/rosbridge_unsubscribe_msg.h"
+#include "messages/rosbridge_unadvertise_msg.h"
 
 using json = rapidjson::Document;
 
@@ -49,6 +54,8 @@ namespace rosbridge2cpp{
       // Please make sure that the message matches the type of the topic,
       // since this will NOT be valided before sending it to the rosbridge.
       void Publish(json &message);
+
+      void Publish(rapidjson::Value &message);
 
       std::string TopicName(){
         return topic_name_;
