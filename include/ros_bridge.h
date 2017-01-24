@@ -110,7 +110,6 @@ namespace rosbridge2cpp{
       ITransportLayer &transport_layer_;
       std::unordered_map<std::string, std::list<FunVrROSPublishMsg>> registered_topic_callbacks_;
       std::unordered_map<std::string, FunVrROSServiceResponseMsg> registered_service_callbacks_;
-      // std::unordered_map<std::string, FunJSONcrJSON> registered_service_request_callbacks_;
       std::unordered_map<std::string, FunVrROSCallServiceMsgrROSServiceResponseMsgrAllocator> registered_service_request_callbacks_;
       bool bson_only_mode_ = false;
 

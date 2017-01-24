@@ -62,18 +62,11 @@ namespace rosbridge2cpp{
 
     std::string str_repr = Helper::get_string_from_rapidjson(message); 
     return SendMessage(str_repr);
-    // return false;
   }
 
   void ROSBridge::HandleIncomingPublishMessage(ROSBridgePublishMsg &data){
     //Incoming topic message - dispatch to correct callback
-    // if (!data.HasMember("topic")){
-    //   std::cerr << "[ROSBridge] Received 'publish' message without 'topic' field." <<std::endl;
-    //   return;
-    // }
-
-    // std::string incoming_topic_name = data["topic"].GetString();
-    std::string incoming_topic_name = data.topic_;
+    std::string &incoming_topic_name = data.topic_;
     if ( registered_topic_callbacks_.find(incoming_topic_name) == registered_topic_callbacks_.end()) {
       std::cerr << "[ROSBridge] Received message for topic " << incoming_topic_name << "where no callback has been registered before" <<std::endl;
       return;
@@ -83,7 +76,6 @@ namespace rosbridge2cpp{
       return;
     }
 
-    // if (!data.HasMember("msg")){
     if ( data.msg_json_.IsNull()){
       std::cerr << "[ROSBridge] Received message for topic " << incoming_topic_name << ", but 'msg' field is missing. Aborting" <<std::endl;
       return;
@@ -91,28 +83,17 @@ namespace rosbridge2cpp{
 
     // Iterate over all registered callbacks for the given topic
     for(auto topic_callback : registered_topic_callbacks_.find(incoming_topic_name)->second){
-      // json msg;
-      // msg.CopyFrom(data["msg"], msg.GetAllocator());
-      // msg.CopyFrom(data.msg_json_, msg.GetAllocator());
-      // topic_callback(msg);
+      // TODO observe topic callback usage. If callbacks receive 'Null' 
+      // json fields this may happen due to move operations in
+      // one of the callbacks.
+      // We may need to switch to copying the json then.
       topic_callback(data);
     }
     return;
   }
 
   void ROSBridge::HandleIncomingServiceResponseMessage(ROSBridgeServiceResponseMsg &data){
-    // if (!data.HasMember("service")){
-    //   std::cerr << "[ROSBridge] Received 'service_response' message without 'service' field." <<std::endl;
-    //   return;
-    // }
-
-    // if (!data.HasMember("id")){
-    //   std::cerr << "[ROSBridge] Received 'service_response' message without 'id' field. Discarding message." <<std::endl;
-    //   return;
-    // }
-
-    // std::string incoming_service_id = data["id"].GetString();
-    std::string incoming_service_id = data.id_;
+    std::string &incoming_service_id = data.id_;
 
     auto service_response_callback_it = registered_service_callbacks_.find(incoming_service_id);
 
@@ -131,13 +112,7 @@ namespace rosbridge2cpp{
   }
 
   void ROSBridge::HandleIncomingServiceRequestMessage(std::string id, ROSBridgeCallServiceMsg &data){
-    // if (!data.HasMember("service")){
-    //   std::cerr << "[ROSBridge] Received 'call_service' message without 'service' field." <<std::endl;
-    //   return;
-    // }
-
-    // std::string incoming_service = data["service"].GetString();
-    std::string incoming_service = data.service_;
+    std::string &incoming_service = data.service_;
 
     auto service_request_callback_it =  registered_service_request_callbacks_.find(incoming_service);
 
@@ -162,31 +137,6 @@ namespace rosbridge2cpp{
 
     // Execute the callback for the given service id
     service_request_callback_it->second(data,response,response_allocator.GetAllocator());
-    // if (!response.HasMember("result")){
-    //   std::cerr << "[ROSBridge] The callback handler for " << incoming_service << " doesn't contain a result. Aborting reply" <<std::endl;
-    //   // TODO Respond with failed service call?
-    //   return;
-    // }
-
-    // json full_response;
-    // full_response.SetObject();
-    // full_response.AddMember("op","service_response", full_response.GetAllocator());
-    // full_response.AddMember("service", incoming_service, full_response.GetAllocator());
-    // full_response.AddMember("result", response["result"], full_response.GetAllocator());
-
-    // if(id!=""){
-    //   full_response.AddMember("id", id, full_response.GetAllocator());
-    // }
-
-    // Return values may be omitted.
-    // Include them in the response when given.
-    // if(response.HasMember("values")){
-    //   full_response.AddMember("values", response["values"], full_response.GetAllocator());
-    // }//else{
-    //   std::cout << "[ROSBridge] Service response for " << incoming_service << " didn't contain any values" <<  std::endl;
-    // }
-
-    // std::cout << "[ROSBridge] Full service response: " << Helper::get_string_from_rapidjson(full_response) << std::endl;
     SendMessage(response);
   }
 
@@ -222,9 +172,6 @@ namespace rosbridge2cpp{
     if(std::string(data["op"].GetString(), data["op"].GetStringLength()) == "call_service"){
       ROSBridgeCallServiceMsg m;
       m.FromJSON(data);
-      // std::string id = "";
-      // if(data.HasMember("id"))
-      //   id = data["id"].GetString();
       HandleIncomingServiceRequestMessage(m.id_, m);
     }
 
