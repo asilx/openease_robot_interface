@@ -77,23 +77,26 @@ public:
     serviceResponseReceived = true;
   }
 
-  json const_service_response_forty_two(const json &message){
-    std::string str_repr = Helper::get_string_from_rapidjson(message);
-    std::cout << "[Tests] Testing Service handler received: " << str_repr << std::endl;
+  void const_service_response_forty_two(ROSBridgeCallServiceMsg &message, ROSBridgeServiceResponseMsg &response,
+      rapidjson::Document::AllocatorType &alloc){
+    // std::string str_repr = Helper::get_string_from_rapidjson(message);
+    // std::cout << "[Tests] Testing Service handler received: " << str_repr << std::endl;
 
-    rapidjson::Document response;
-    response.SetObject();
-    response.AddMember("result", true, response.GetAllocator());
+    // rapidjson::Document response;
+    // response.SetObject();
+    // response.AddMember("result", true, response.GetAllocator());
 
-    rapidjson::Document values;
-    values.SetObject();
-    values.AddMember("sum", 42, response.GetAllocator()); // Use responses Allocator, because values will be deconstructed after return;
+    // rapidjson::Document values;
+    // values.SetObject();
+    // values.AddMember("sum", 42, response.GetAllocator()); // Use responses Allocator, because values will be deconstructed after return;
 
-    response.AddMember("values", values, response.GetAllocator());
+    // response.AddMember("values", values, response.GetAllocator());
 
-    std::cout << "[Tests] Sending service response values: " << Helper::get_string_from_rapidjson(response) << std::endl;
+    // std::cout << "[Tests] Sending service response values: " << Helper::get_string_from_rapidjson(response) << std::endl;
 
-    return response;
+    // return response;
+    response.values_json_.AddMember("sum",42,alloc);
+    response.result_ = true;
   }
 
   bool messageReceived{false};
@@ -212,7 +215,12 @@ TEST_F(ROSBridgeTest, CallOwnService) {
 
   // Advertise own service
   ROSService test_service_handler(ros, "/rosbridge_testing_service", "rospy_tutorials/AddTwoInts");
-  auto service_request_handler = std::bind(&TestHandlerMethods::const_service_response_forty_two, &thm, std::placeholders::_1);
+  auto service_request_handler = std::bind(&TestHandlerMethods::const_service_response_forty_two, 
+      &thm, 
+      std::placeholders::_1,
+      std::placeholders::_2,
+      std::placeholders::_3
+      );
   test_service_handler.Advertise(service_request_handler);
 
 

@@ -56,7 +56,6 @@ public:
     add_if_value_changed(d, alloc, "id", id_);
     add_if_value_changed(d, alloc, "service", service_);
 
-
     d.AddMember("result", result_, alloc);
 
     if( !values_json_.IsNull() )

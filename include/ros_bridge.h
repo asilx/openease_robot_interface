@@ -84,7 +84,7 @@ namespace rosbridge2cpp{
       // Register the callback that shall be executed,
       // whenever we receive a request for a service that
       // this ROSBridge has advertised via a ROSService.
-      void RegisterServiceRequestCallback(std::string service_name, FunJSONcrJSON fun);
+      void RegisterServiceRequestCallback(std::string service_name, FunVrROSCallServiceMsgrROSServiceResponseMsgrAllocator fun);
 
       // An ID Counter that will be used to generate increasing
       // IDs for service/topic etc. messages
@@ -105,12 +105,13 @@ namespace rosbridge2cpp{
       void HandleIncomingServiceResponseMessage(ROSBridgeServiceResponseMsg &data);
 
       // Handler Method for reply packet
-      void HandleIncomingServiceRequestMessage(std::string id, json &data);
+      void HandleIncomingServiceRequestMessage(std::string id, ROSBridgeCallServiceMsg &data);
 
       ITransportLayer &transport_layer_;
       std::unordered_map<std::string, std::list<FunVcrJSON>> registered_topic_callbacks_;
       std::unordered_map<std::string, FunVrROSServiceResponseMsg> registered_service_callbacks_;
-      std::unordered_map<std::string, FunJSONcrJSON> registered_service_request_callbacks_;
+      // std::unordered_map<std::string, FunJSONcrJSON> registered_service_request_callbacks_;
+      std::unordered_map<std::string, FunVrROSCallServiceMsgrROSServiceResponseMsgrAllocator> registered_service_request_callbacks_;
       bool bson_only_mode_ = false;
 
       template<typename T>

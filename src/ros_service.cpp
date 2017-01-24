@@ -22,7 +22,7 @@ namespace rosbridge2cpp{
     ros_.SendMessage(cmd);
   }
 
-  void ROSService::Advertise(FunJSONcrJSON callback){
+  void ROSService::Advertise(FunVrROSCallServiceMsgrROSServiceResponseMsgrAllocator callback){
     if(is_advertised_) 
       return;
 

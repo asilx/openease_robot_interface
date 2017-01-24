@@ -22,16 +22,13 @@ namespace rosbridge2cpp{
 
       // Advertise a service and define the request handling callback
       // The given callback will handle all service requests.
-      // The signature of the callback is as follows:
-      //   - Return Type: json. 
-      //   This json variable will contain the Service Response.
-      //   The following attributes shall be present:
-      //   response["result"] : Indicating success or a failed service call. REQUIRED!
-      //                        This variable shall be either a _boolean_ true (for success) or false (for fail).
-      //   response["values"] : A list of the values that shall be returned to the caller. This field MAY be omitted.
       //
-      //   - Parameter: json. This contains the service request that we've received via ROSBridge.
-      void Advertise(FunJSONcrJSON callback);
+      // The callback will get the CallService packet from the server and 
+      // a reference to a ServiceResponse packet, that can be filled as desired.
+      //
+      // This method will only be used when using rapidjson, since we need to use
+      // the allocator of rapidjson to avoid copy operations.
+      void Advertise(FunVrROSCallServiceMsgrROSServiceResponseMsgrAllocator callback);
 
       // Unadvertise an advertised service
       // Will do nothing if no service has been advertised before in this instance
