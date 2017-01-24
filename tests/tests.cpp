@@ -54,9 +54,11 @@ public:
   TestHandlerMethods () = default;
   ~TestHandlerMethods () = default;
 
-  void publish_subscribe_test_callback(const json &message){
-    std::cout << "[Tests] Service handler received: " << Helper::get_string_from_rapidjson(message) << std::endl;
-    std::string data = message["data"].GetString();
+  void publish_subscribe_test_callback(const ROSBridgePublishMsg &message){
+    // std::cout << "[Tests] Service handler received: " << Helper::get_string_from_rapidjson(message) << std::endl;
+    std::cout << "[Tests] Service handler received: " << message.id_ << std::endl;
+    // std::string data = message["data"].GetString();
+    std::string data = message.msg_json_["data"].GetString();
     if(data=="a5424890996794277159554918"){
       messageReceived = true;
     }

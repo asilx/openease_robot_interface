@@ -1,7 +1,7 @@
 #include "ros_topic.h"
 
 namespace rosbridge2cpp{
-  void ROSTopic::Subscribe(FunVcrJSON callback){
+  void ROSTopic::Subscribe(FunVrROSPublishMsg callback){
     ros_.RegisterTopicCallback(topic_name_, callback); // Register callback in ROSBridge
     subscription_counter_++;
 
@@ -26,7 +26,7 @@ namespace rosbridge2cpp{
     ros_.SendMessage(cmd);
   }
 
-  void ROSTopic::Unsubscribe(FunVcrJSON callback){
+  void ROSTopic::Unsubscribe(FunVrROSPublishMsg callback){
     // We've no active subscription
     if(subscribe_id_ == "") 
       return;

@@ -32,7 +32,16 @@ namespace rosbridge2cpp{
       //
       // For every incoming message, the callback function will receive the "msg" 
       // field of the incoming ROSBridge packet for the given topic
-      void Subscribe(FunVcrJSON callback);
+      //
+      // *WARNING* When using rapidjson transmission, be aware of moving operations 
+      // in the topic callbacks.
+      // Things like:
+      // std::string x = message.msg_json_["data"];
+      // in the callbacks will move the data from the 
+      // the json result to the local variable
+      // When this happens, other callbacks that receive the same message
+      // will read 'Null' on msg_json_
+      void Subscribe(FunVrROSPublishMsg callback);
 
       // Unsubscribe from a given topic
       // If multiple callbacks for this topic have been registered,
@@ -41,7 +50,7 @@ namespace rosbridge2cpp{
       // If you're passing the last registered callback to this function,
       // it will be unregistered in the ROSBridge instance
       // AND 'unsubscribe' will be send to the server
-      void Unsubscribe(FunVcrJSON callback);
+      void Unsubscribe(FunVrROSPublishMsg callback);
 
       // Advertise as a publisher for this topic
       void Advertise();

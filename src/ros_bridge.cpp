@@ -91,10 +91,11 @@ namespace rosbridge2cpp{
 
     // Iterate over all registered callbacks for the given topic
     for(auto topic_callback : registered_topic_callbacks_.find(incoming_topic_name)->second){
-      json msg;
+      // json msg;
       // msg.CopyFrom(data["msg"], msg.GetAllocator());
-      msg.CopyFrom(data.msg_json_, msg.GetAllocator());
-      topic_callback(msg);
+      // msg.CopyFrom(data.msg_json_, msg.GetAllocator());
+      // topic_callback(msg);
+      topic_callback(data);
     }
     return;
   }
@@ -239,7 +240,7 @@ namespace rosbridge2cpp{
     return transport_layer_.Init(ip_addr,port);
   }
 
-  void ROSBridge::RegisterTopicCallback(std::string topic_name, FunVcrJSON fun){
+  void ROSBridge::RegisterTopicCallback(std::string topic_name, FunVrROSPublishMsg fun){
     registered_topic_callbacks_[topic_name].push_back(fun);
   }
 
@@ -252,7 +253,7 @@ namespace rosbridge2cpp{
   }
 
 
-  bool ROSBridge::UnregisterTopicCallback(std::string topic_name, FunVcrJSON fun){
+  bool ROSBridge::UnregisterTopicCallback(std::string topic_name, FunVrROSPublishMsg fun){
     if ( registered_topic_callbacks_.find(topic_name) == registered_topic_callbacks_.end()) {
       std::cerr << "[ROSBridge] UnregisterTopicCallback called but given topic name" << topic_name << " not in map." <<std::endl;
       return false;
@@ -262,9 +263,9 @@ namespace rosbridge2cpp{
       return false;
     }
 
-    std::list<FunVcrJSON> &r_list_of_callbacks = registered_topic_callbacks_.find(topic_name)->second;
+    std::list<FunVrROSPublishMsg> &r_list_of_callbacks = registered_topic_callbacks_.find(topic_name)->second;
 
-    for(std::list<FunVcrJSON>::iterator topic_callback_it = r_list_of_callbacks.begin(); 
+    for(std::list<FunVrROSPublishMsg>::iterator topic_callback_it = r_list_of_callbacks.begin(); 
         topic_callback_it!= r_list_of_callbacks.end();
         ++topic_callback_it){
       if(get_address(*topic_callback_it) == get_address(fun)){
