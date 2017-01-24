@@ -79,7 +79,7 @@ namespace rosbridge2cpp{
 
       // Register the callback for a service call.
       // This callback will be executed when we receive the response for a particular Service Request
-      void RegisterServiceCallback(std::string service_call_id, FunVcrJSON fun);
+      void RegisterServiceCallback(std::string service_call_id, FunVrROSServiceResponseMsg fun);
 
       // Register the callback that shall be executed,
       // whenever we receive a request for a service that
@@ -99,17 +99,17 @@ namespace rosbridge2cpp{
       void IncomingMessageCallback(json &data);
 
       // Handler Method for reply packet
-      void HandleIncomingPublishMessage(json &data);
+      void HandleIncomingPublishMessage(ROSBridgePublishMsg &data);
 
       // Handler Method for reply packet
-      void HandleIncomingServiceResponseMessage(json &data);
+      void HandleIncomingServiceResponseMessage(ROSBridgeServiceResponseMsg &data);
 
       // Handler Method for reply packet
       void HandleIncomingServiceRequestMessage(std::string id, json &data);
 
       ITransportLayer &transport_layer_;
       std::unordered_map<std::string, std::list<FunVcrJSON>> registered_topic_callbacks_;
-      std::unordered_map<std::string, FunVcrJSON> registered_service_callbacks_;
+      std::unordered_map<std::string, FunVrROSServiceResponseMsg> registered_service_callbacks_;
       std::unordered_map<std::string, FunJSONcrJSON> registered_service_request_callbacks_;
       bool bson_only_mode_ = false;
 

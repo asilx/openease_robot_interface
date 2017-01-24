@@ -43,7 +43,7 @@ namespace rosbridge2cpp{
       // has been received by ROSBridge. It will passed the received data to the callback.
       // The whole content of the "request" parameter will be send as the "args"
       // argument of the Service Request
-      void CallService(rapidjson::Value &request, FunVcrJSON callback);
+      void CallService(rapidjson::Value &request, FunVrROSServiceResponseMsg callback);
 
       std::string ServiceName(){
         return service_name_;

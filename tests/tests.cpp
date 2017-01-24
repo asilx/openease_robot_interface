@@ -66,13 +66,14 @@ public:
     }
   }
 
-  void service_response_callback(const json &message){
-    std::string str_repr = Helper::get_string_from_rapidjson(message);
-    std::cout << "[Tests] Service response received: " << str_repr << std::endl;
-    bool result = message["result"].GetBool();
-    ASSERT_TRUE(result);
-    int sum = message["values"]["sum"].GetInt();
-    ASSERT_EQ(sum, 42);
+  // void service_response_callback(const json &message){
+  void service_response_callback(const ROSBridgeServiceResponseMsg &message){
+    // std::string str_repr = Helper::get_string_from_rapidjson(message);
+    // std::cout << "[Tests] Service response received: " << str_repr << std::endl;
+    // bool result = message["result"].GetBool();
+    ASSERT_TRUE(message.result_);
+    // int sum = message["values"]["sum"].GetInt();
+    // ASSERT_EQ(sum, 42);
     serviceResponseReceived = true;
   }
 

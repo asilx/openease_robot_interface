@@ -1,6 +1,4 @@
 #include "client/socket_tcp_connection.h"
-#include <bson.h>
-#include <iomanip>
 
 namespace rosbridge2cpp{
   bool SocketTCPConnection::Init(std::string p_ip_addr, int p_port){
@@ -68,7 +66,7 @@ namespace rosbridge2cpp{
     std::unique_ptr<unsigned char[]> recv_buffer(new unsigned char[buf_size]); 
 
     // Register message callback
-    std::function<void(const json)> message_cb = messageCallback;
+    // std::function<void(const json)> message_cb = messageCallback;
 
     // TODO handle joined messages while reading the buffer
     while(!terminate_receiver_thread_){
@@ -103,6 +101,9 @@ namespace rosbridge2cpp{
       bson_t b;
 
       if(bson_only_mode_){
+        std::cerr << "bson receive not implemented right now" << std::endl;
+        continue;
+        /*
         if(!bson_init_static (&b, recv_buffer.get(), count)){
           std::cout << "Error on BSON parse - Ignoring message" << std::endl;
           continue;
@@ -118,18 +119,20 @@ namespace rosbridge2cpp{
         // bool retval = transport_layer_.SendMessage(bson_data,bson_size);
         // bson_destroy(&b);
         j.Parse(str);
+        */
       }else{
         j.Parse((char *)recv_buffer.get());
+
+        // TODO Use a thread for the message callback?
+        if(callback_function_defined_)
+          incoming_message_callback_(j);
       }
 
 
-      // TODO Use a thread for the message callback?
-      if(callback_function_defined_)
-        incoming_message_callback_(j);
-      std::cout.flush();
 
       if(bson_only_mode_)
         bson_destroy(&b);
+      std::cout.flush();
     }
     return 0; // Everything went OK - terminateReceiverThread is now true
   }

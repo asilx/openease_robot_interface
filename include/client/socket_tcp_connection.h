@@ -2,17 +2,20 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <iomanip>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <bson.h>
 
 #include "rapidjson/document.h"
 
 #include "itransport_layer.h"
 #include "types.h"
 #include "helper.h"
+#include "messages/rosbridge_msg.h"
 
 using json = rapidjson::Document;
  
@@ -41,10 +44,10 @@ namespace rosbridge2cpp{
       }
 
       // A callback that just outputs received messages
-      void static messageCallback(const json &message){
-        std::string str_repr = Helper::get_string_from_rapidjson(message);
-        std::cout << "Message received: " << str_repr << std::endl;
-      }
+      // void static messageCallback(const json &message){
+      //   std::string str_repr = Helper::get_string_from_rapidjson(message);
+      //   std::cout << "Message received: " << str_repr << std::endl;
+      // }
 
 
       bool Init(std::string p_ip_addr, int p_port);

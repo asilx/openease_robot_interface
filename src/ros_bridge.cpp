@@ -65,14 +65,15 @@ namespace rosbridge2cpp{
     // return false;
   }
 
-  void ROSBridge::HandleIncomingPublishMessage(json &data){
+  void ROSBridge::HandleIncomingPublishMessage(ROSBridgePublishMsg &data){
     //Incoming topic message - dispatch to correct callback
-    if (!data.HasMember("topic")){
-      std::cerr << "[ROSBridge] Received 'publish' message without 'topic' field." <<std::endl;
-      return;
-    }
+    // if (!data.HasMember("topic")){
+    //   std::cerr << "[ROSBridge] Received 'publish' message without 'topic' field." <<std::endl;
+    //   return;
+    // }
 
-    std::string incoming_topic_name = data["topic"].GetString();
+    // std::string incoming_topic_name = data["topic"].GetString();
+    std::string incoming_topic_name = data.topic_;
     if ( registered_topic_callbacks_.find(incoming_topic_name) == registered_topic_callbacks_.end()) {
       std::cerr << "[ROSBridge] Received message for topic " << incoming_topic_name << "where no callback has been registered before" <<std::endl;
       return;
@@ -82,7 +83,8 @@ namespace rosbridge2cpp{
       return;
     }
 
-    if (!data.HasMember("msg")){
+    // if (!data.HasMember("msg")){
+    if ( data.msg_json_.IsNull()){
       std::cerr << "[ROSBridge] Received message for topic " << incoming_topic_name << ", but 'msg' field is missing. Aborting" <<std::endl;
       return;
     }
@@ -90,24 +92,26 @@ namespace rosbridge2cpp{
     // Iterate over all registered callbacks for the given topic
     for(auto topic_callback : registered_topic_callbacks_.find(incoming_topic_name)->second){
       json msg;
-      msg.CopyFrom(data["msg"], msg.GetAllocator());
+      // msg.CopyFrom(data["msg"], msg.GetAllocator());
+      msg.CopyFrom(data.msg_json_, msg.GetAllocator());
       topic_callback(msg);
     }
     return;
   }
 
-  void ROSBridge::HandleIncomingServiceResponseMessage(json &data){
-    if (!data.HasMember("service")){
-      std::cerr << "[ROSBridge] Received 'service_response' message without 'service' field." <<std::endl;
-      return;
-    }
+  void ROSBridge::HandleIncomingServiceResponseMessage(ROSBridgeServiceResponseMsg &data){
+    // if (!data.HasMember("service")){
+    //   std::cerr << "[ROSBridge] Received 'service_response' message without 'service' field." <<std::endl;
+    //   return;
+    // }
 
-    if (!data.HasMember("id")){
-      std::cerr << "[ROSBridge] Received 'service_response' message without 'id' field. Discarding message." <<std::endl;
-      return;
-    }
+    // if (!data.HasMember("id")){
+    //   std::cerr << "[ROSBridge] Received 'service_response' message without 'id' field. Discarding message." <<std::endl;
+    //   return;
+    // }
 
-    std::string incoming_service_id = data["id"].GetString();
+    // std::string incoming_service_id = data["id"].GetString();
+    std::string incoming_service_id = data.id_;
 
     auto service_response_callback_it = registered_service_callbacks_.find(incoming_service_id);
 
@@ -174,15 +178,29 @@ namespace rosbridge2cpp{
     std::string str_repr = Helper::get_string_from_rapidjson(data);
     std::cout << "[ROSBridge] Received data: " << str_repr << std::endl;
 
+
     // Check the message type and dispatch the message properly
     //
     // Incoming Topic messages
-    if(std::string(data["op"].GetString(), data["op"].GetStringLength())== "publish")
-      HandleIncomingPublishMessage(data);
+    if(std::string(data["op"].GetString(), data["op"].GetStringLength())== "publish"){
+      ROSBridgePublishMsg m;
+      if(m.FromJSON(data)){
+        HandleIncomingPublishMessage(m);
+      }else{
+        std::cerr << "Failed to parse publish message into class. Skipping message." << std::endl;
+      }
+    }
 
     // Service responses for service we called earlier
-    if(std::string(data["op"].GetString(), data["op"].GetStringLength()) == "service_response")
-      HandleIncomingServiceResponseMessage(data);
+    if(std::string(data["op"].GetString(), data["op"].GetStringLength()) == "service_response"){
+      ROSBridgeServiceResponseMsg m;
+      m.FromJSON(data);
+      if(m.FromJSON(data)){
+        HandleIncomingServiceResponseMessage(m);
+      }else{
+        std::cerr << "Failed to parse service_response message into class. Skipping message." << std::endl;
+      }
+    }
 
     // Service Requests to a service that we advertised in ROSService
     if(std::string(data["op"].GetString(), data["op"].GetStringLength()) == "call_service"){
@@ -208,7 +226,7 @@ namespace rosbridge2cpp{
     registered_topic_callbacks_[topic_name].push_back(fun);
   }
 
-  void ROSBridge::RegisterServiceCallback(std::string service_call_id, FunVcrJSON fun){
+  void ROSBridge::RegisterServiceCallback(std::string service_call_id, FunVrROSServiceResponseMsg fun){
     registered_service_callbacks_[service_call_id] = fun;
   }
 

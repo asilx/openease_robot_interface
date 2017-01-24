@@ -1,7 +1,7 @@
 #include "ros_service.h"
 
 namespace rosbridge2cpp{
-  void ROSService::CallService(rapidjson::Value &request, FunVcrJSON callback){
+  void ROSService::CallService(rapidjson::Value &request, FunVrROSServiceResponseMsg callback){
     if(is_advertised_) // You can't use an advertised ROSService instance to call services. 
       return;         // Use a separate instance
 
