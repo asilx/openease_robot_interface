@@ -30,6 +30,13 @@ public:
     return d;
   }
 
+  void ToBSON(bson_t &bson){
+    BSON_APPEND_UTF8 (&bson, "op", getOpCodeString().c_str());
+    add_if_value_changed(bson, "id", id_);
+
+    add_if_value_changed(bson, "service", service_);
+  }
+
   std::string service_;
 private:
   /* data */

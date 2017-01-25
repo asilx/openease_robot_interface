@@ -565,8 +565,6 @@ TEST(IndependentMethod, ROSBridgeAdvertiseMsgToJSON) {
   json alloc;
   json message = rosmsg.ToJSON(alloc.GetAllocator());
 
-  std::cout << Helper::get_string_from_rapidjson(message);
-
   ASSERT_STREQ(message["op"].GetString(),"advertise");
   ASSERT_STREQ(message["id"].GetString(),"id");
   ASSERT_STREQ(message["topic"].GetString(),"topic");
@@ -581,8 +579,6 @@ TEST(IndependentMethod, ROSBridgeAdvertiseServiceToJSON) {
 
   json alloc;
   json message = rosmsg.ToJSON(alloc.GetAllocator());
-
-  std::cout << Helper::get_string_from_rapidjson(message);
 
   ASSERT_STREQ(message["op"].GetString(),"advertise_service");
   ASSERT_STREQ(message["id"].GetString(),"id");
@@ -605,8 +601,6 @@ TEST(IndependentMethod, ROSBridgeCallServiceToJSON) {
   rosmsg.args_json_ = args;
 
   json message = rosmsg.ToJSON(alloc.GetAllocator());
-
-  std::cout << Helper::get_string_from_rapidjson(message);
 
   ASSERT_STREQ(message["op"].GetString(),"call_service");
   ASSERT_STREQ(message["id"].GetString(),"id");
@@ -632,8 +626,6 @@ TEST(IndependentMethod, ROSBridgePublishToJSON) {
 
   json message = rosmsg.ToJSON(alloc.GetAllocator());
 
-  std::cout << Helper::get_string_from_rapidjson(message);
-
   ASSERT_STREQ(message["op"].GetString(),"publish");
   ASSERT_STREQ(message["id"].GetString(),"id");
   ASSERT_STREQ(message["topic"].GetString(),"topic");
@@ -657,8 +649,6 @@ TEST(IndependentMethod, ROSBridgeServiceResponseToJSON) {
 
   json message = rosmsg.ToJSON(alloc.GetAllocator());
 
-  std::cout << Helper::get_string_from_rapidjson(message);
-
   ASSERT_STREQ(message["op"].GetString(),"service_response");
   ASSERT_STREQ(message["id"].GetString(),"id");
   ASSERT_STREQ(message["service"].GetString(),"service");
@@ -679,8 +669,6 @@ TEST(IndependentMethod, ROSBridgeSubscribeToJSON) {
 
   json message = rosmsg.ToJSON(alloc.GetAllocator());
 
-  std::cout << Helper::get_string_from_rapidjson(message);
-
   ASSERT_STREQ(message["op"].GetString(),"subscribe");
   ASSERT_STREQ(message["id"].GetString(),"id");
   ASSERT_STREQ(message["topic"].GetString(),"topic");
@@ -699,8 +687,6 @@ TEST(IndependentMethod, ROSBridgeUnadvertiseToJSON) {
 
   json message = rosmsg.ToJSON(alloc.GetAllocator());
 
-  std::cout << Helper::get_string_from_rapidjson(message);
-
   ASSERT_STREQ(message["op"].GetString(),"unadvertise");
   ASSERT_STREQ(message["id"].GetString(),"id");
   ASSERT_STREQ(message["topic"].GetString(),"topic");
@@ -715,8 +701,6 @@ TEST(IndependentMethod, ROSBridgeUnadvertiseServiceToJSON) {
 
   json message = rosmsg.ToJSON(alloc.GetAllocator());
 
-  std::cout << Helper::get_string_from_rapidjson(message);
-
   ASSERT_STREQ(message["op"].GetString(),"unadvertise_service");
   ASSERT_STREQ(message["id"].GetString(),"id");
   ASSERT_STREQ(message["service"].GetString(),"service");
@@ -730,8 +714,6 @@ TEST(IndependentMethod, ROSBridgeUnsubscribeToJSON) {
   json alloc;
 
   json message = rosmsg.ToJSON(alloc.GetAllocator());
-
-  std::cout << Helper::get_string_from_rapidjson(message);
 
   ASSERT_STREQ(message["op"].GetString(),"unsubscribe");
   ASSERT_STREQ(message["id"].GetString(),"id");
@@ -828,101 +810,99 @@ TEST(IndependentMethod, ROSBridgePublishToBSON) {
   ASSERT_STREQ(Helper::get_utf8_by_key("type",b,key_found).c_str(),"type");
   ASSERT_STREQ(Helper::get_utf8_by_key("msg.data",b,key_found).c_str(),"text");
 }
-// 
-// TEST(IndependentMethod, ROSBridgeServiceResponseToBSON) {
-//   ROSBridgeServiceResponseMsg rosmsg(true);
-//   rosmsg.id_ = "id";
-//   rosmsg.service_ = "service";
-//   rosmsg.result_ = true;
-//   
-//   json alloc;
-// 
-//   rapidjson::Value values(rapidjson::kObjectType);
-// 
-//   values.AddMember("a","b",alloc.GetAllocator());
-// 
-//   rosmsg.values_json_ = values;
-// 
-//   json message = rosmsg.ToBSON(alloc.GetAllocator());
-// 
-//   std::cout << Helper::get_string_from_rapidjson(message);
-// 
-//   ASSERT_STREQ(message["op"].GetString(),"service_response");
-//   ASSERT_STREQ(message["id"].GetString(),"id");
-//   ASSERT_STREQ(message["service"].GetString(),"service");
-//   ASSERT_EQ(message["result"].GetBool(),true);
-//   ASSERT_STREQ(message["values"]["a"].GetString(),"b");
-// }
-// 
-// TEST(IndependentMethod, ROSBridgeSubscribeToBSON) {
-//   ROSBridgeSubscribeMsg rosmsg(true);
-//   rosmsg.id_ = "id";
-//   rosmsg.topic_ = "topic";
-//   rosmsg.type_ = "type";
-//   rosmsg.queue_length_ = 23;
-//   rosmsg.throttle_rate_ = 42;
-//   rosmsg.compression_ = "compression";
-// 
-//   json alloc;
-// 
-//   json message = rosmsg.ToBSON(alloc.GetAllocator());
-// 
-//   std::cout << Helper::get_string_from_rapidjson(message);
-// 
-//   ASSERT_STREQ(message["op"].GetString(),"subscribe");
-//   ASSERT_STREQ(message["id"].GetString(),"id");
-//   ASSERT_STREQ(message["topic"].GetString(),"topic");
-//   ASSERT_STREQ(message["type"].GetString(),"type");
-//   ASSERT_EQ(message["queue_length"].GetInt(),23);
-//   ASSERT_EQ(message["throttle_rate"].GetInt(),42);
-//   ASSERT_STREQ(message["compression"].GetString(),"compression");
-// }
-// 
-// TEST(IndependentMethod, ROSBridgeUnadvertiseToBSON) {
-//   ROSBridgeUnadvertiseMsg rosmsg(true);
-//   rosmsg.id_ = "id";
-//   rosmsg.topic_ = "topic";
-// 
-//   json alloc;
-// 
-//   json message = rosmsg.ToBSON(alloc.GetAllocator());
-// 
-//   std::cout << Helper::get_string_from_rapidjson(message);
-// 
-//   ASSERT_STREQ(message["op"].GetString(),"unadvertise");
-//   ASSERT_STREQ(message["id"].GetString(),"id");
-//   ASSERT_STREQ(message["topic"].GetString(),"topic");
-// }
-// 
-// TEST(IndependentMethod, ROSBridgeUnadvertiseServiceToBSON) {
-//   ROSBridgeUnadvertiseServiceMsg rosmsg(true);
-//   rosmsg.id_ = "id";
-//   rosmsg.service_ = "service";
-// 
-//   json alloc;
-// 
-//   json message = rosmsg.ToBSON(alloc.GetAllocator());
-// 
-//   std::cout << Helper::get_string_from_rapidjson(message);
-// 
-//   ASSERT_STREQ(message["op"].GetString(),"unadvertise_service");
-//   ASSERT_STREQ(message["id"].GetString(),"id");
-//   ASSERT_STREQ(message["service"].GetString(),"service");
-// }
-// 
-// TEST(IndependentMethod, ROSBridgeUnsubscribeToBSON) {
-//   ROSBridgeUnsubscribeMsg rosmsg(true);
-//   rosmsg.id_ = "id";
-//   rosmsg.topic_ = "topic";
-// 
-//   json alloc;
-// 
-//   json message = rosmsg.ToBSON(alloc.GetAllocator());
-// 
-//   std::cout << Helper::get_string_from_rapidjson(message);
-// 
-//   ASSERT_STREQ(message["op"].GetString(),"unsubscribe");
-//   ASSERT_STREQ(message["id"].GetString(),"id");
-//   ASSERT_STREQ(message["topic"].GetString(),"topic");
-// }
-// 
+
+TEST(IndependentMethod, ROSBridgeServiceResponseToBSON) {
+  ROSBridgeServiceResponseMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.service_ = "service";
+  rosmsg.result_ = true;
+  
+  bson_t *values = BCON_NEW(
+    "a", BCON_UTF8("b")
+
+  );
+
+  rosmsg.values_bson_ = values;
+
+  bson_t b = BSON_INITIALIZER;
+  rosmsg.ToBSON(b);
+
+  bool key_found = false;
+
+
+  ASSERT_STREQ(Helper::get_utf8_by_key("op",b,key_found).c_str(),"service_response");
+  ASSERT_STREQ(Helper::get_utf8_by_key("id",b,key_found).c_str(),"id");
+  ASSERT_STREQ(Helper::get_utf8_by_key("service",b,key_found).c_str(),"service");
+  ASSERT_EQ(Helper::get_bool_by_key("result",b,key_found),true);
+  ASSERT_STREQ(Helper::get_utf8_by_key("values.a",b,key_found).c_str(),"b");
+}
+
+TEST(IndependentMethod, ROSBridgeSubscribeToBSON) {
+  ROSBridgeSubscribeMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.topic_ = "topic";
+  rosmsg.type_ = "type";
+  rosmsg.queue_length_ = 23;
+  rosmsg.throttle_rate_ = 42;
+  rosmsg.compression_ = "compression";
+
+  bson_t b = BSON_INITIALIZER;
+  rosmsg.ToBSON(b);
+
+  bool key_found = false;
+
+  ASSERT_STREQ(Helper::get_utf8_by_key("op",b,key_found).c_str(),"subscribe");
+  ASSERT_STREQ(Helper::get_utf8_by_key("id",b,key_found).c_str(),"id");
+  ASSERT_STREQ(Helper::get_utf8_by_key("topic",b,key_found).c_str(),"topic");
+  ASSERT_STREQ(Helper::get_utf8_by_key("type",b,key_found).c_str(),"type");
+  ASSERT_EQ(Helper::get_int32_by_key("queue_length",b,key_found),23);
+  ASSERT_EQ(Helper::get_int32_by_key("throttle_rate",b,key_found),42);
+  ASSERT_STREQ(Helper::get_utf8_by_key("compression",b,key_found).c_str(),"compression");
+}
+
+
+TEST(IndependentMethod, ROSBridgeUnadvertiseToBSON) {
+  ROSBridgeUnadvertiseMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.topic_ = "topic";
+
+  bson_t b = BSON_INITIALIZER;
+  rosmsg.ToBSON(b);
+
+  bool key_found = false;
+
+  ASSERT_STREQ(Helper::get_utf8_by_key("op",b,key_found).c_str(),"unadvertise");
+  ASSERT_STREQ(Helper::get_utf8_by_key("id",b,key_found).c_str(),"id");
+  ASSERT_STREQ(Helper::get_utf8_by_key("topic",b,key_found).c_str(),"topic");
+}
+
+TEST(IndependentMethod, ROSBridgeUnadvertiseServiceToBSON) {
+  ROSBridgeUnadvertiseServiceMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.service_ = "service";
+
+  bson_t b = BSON_INITIALIZER;
+  rosmsg.ToBSON(b);
+
+  bool key_found = false;
+
+  ASSERT_STREQ(Helper::get_utf8_by_key("op",b,key_found).c_str(),"unadvertise_service");
+  ASSERT_STREQ(Helper::get_utf8_by_key("id",b,key_found).c_str(),"id");
+  ASSERT_STREQ(Helper::get_utf8_by_key("service",b,key_found).c_str(),"service");
+}
+
+TEST(IndependentMethod, ROSBridgeUnsubscribeToBSON) {
+  ROSBridgeUnsubscribeMsg rosmsg(true);
+  rosmsg.id_ = "id";
+  rosmsg.topic_ = "topic";
+
+  bson_t b = BSON_INITIALIZER;
+  rosmsg.ToBSON(b);
+
+  bool key_found = false;
+
+  ASSERT_STREQ(Helper::get_utf8_by_key("op",b,key_found).c_str(),"unsubscribe");
+  ASSERT_STREQ(Helper::get_utf8_by_key("id",b,key_found).c_str(),"id");
+  ASSERT_STREQ(Helper::get_utf8_by_key("topic",b,key_found).c_str(),"topic");
+}
+

@@ -59,6 +59,22 @@ namespace rosbridge2cpp{
         return INT32_MAX;
       }
 
+      // dot_notation refers to MongoDB dot notation¬
+      // returns false and sets success to 'false' if suitable data can't be found via the dot notation¬
+      bool static get_bool_by_key(const char *dot_notation, bson_t &b, bool &success){
+        bson_iter_t iter;
+        bson_iter_t val;
+
+        if (bson_iter_init (&iter, &b) &&
+            bson_iter_find_descendant (&iter, dot_notation, &val) &&
+            BSON_ITER_HOLDS_BOOL (&val)) {
+          success = true;
+          return bson_iter_bool (&val);
+        }
+        success = false;
+        return false;
+      }
+
 
   };
 }
