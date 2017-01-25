@@ -15,7 +15,10 @@ public:
       op_ = ROSBridgeMsg::CALL_SERVICE;
   }
 
-  virtual ~ROSBridgeCallServiceMsg () = default;
+  virtual ~ROSBridgeCallServiceMsg (){
+    if(args_bson_!=nullptr)
+      bson_destroy(args_bson_);
+  }
 
   // Warning: This conversion moves the 'args' field
   // out of the given JSON data into this class
@@ -54,11 +57,23 @@ public:
       d.AddMember("args", args_json_, alloc);
     return d;
   }
+
+  void ToBSON(bson_t &bson){
+    BSON_APPEND_UTF8 (&bson, "op", getOpCodeString().c_str());
+    add_if_value_changed(bson, "id", id_);
+
+    add_if_value_changed(bson, "service", service_);
+    if( args_bson_ != nullptr){
+      if (!BSON_APPEND_DOCUMENT (&bson, "args",args_bson_))
+        std::cerr << "Error while appending 'args' bson to messge BSON" << std::endl;
+    }
+  }
   
 
   std::string service_;
   // The json data in the different wire-level representations
   rapidjson::Value args_json_;
+  bson_t *args_bson_ = nullptr;
 
 private:
   /* data */

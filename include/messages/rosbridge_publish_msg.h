@@ -15,7 +15,10 @@ public:
       op_ = ROSBridgeMsg::PUBLISH;
   }
 
-  // virtual ~ROSBridgePublishMsg () = default;
+  virtual ~ROSBridgePublishMsg (){
+    if(msg_bson_!=nullptr)
+      bson_destroy(msg_bson_);
+  }
 
   // Warning: This conversion moves the 'msg' field
   // out of the given JSON data into this class
@@ -61,6 +64,20 @@ public:
     return d;
   }
 
+  void ToBSON(bson_t &bson){
+    BSON_APPEND_UTF8 (&bson, "op", getOpCodeString().c_str());
+    add_if_value_changed(bson, "id", id_);
+
+    add_if_value_changed(bson, "topic", topic_);
+    add_if_value_changed(bson, "type", type_);
+
+    BSON_APPEND_BOOL(&bson, "latch", latch_);
+    if( msg_bson_ != nullptr){
+      if (!BSON_APPEND_DOCUMENT (&bson, "msg",msg_bson_))
+        std::cerr << "Error while appending 'msg' bson to messge BSON" << std::endl;
+    }
+  }
+
   std::string topic_;
   std::string type_;
   // std::string compression_;
@@ -70,6 +87,7 @@ public:
 
   // The json data in the different wire-level representations
   rapidjson::Value msg_json_;
+  bson_t *msg_bson_ = nullptr;
 
 private:
   /* data */

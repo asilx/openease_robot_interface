@@ -36,6 +36,19 @@ public:
     return d;
   }
 
+  void ToBSON(bson_t &bson){
+    BSON_APPEND_UTF8 (&bson, "op", getOpCodeString().c_str());
+
+    add_if_value_changed(bson, "id", id_);
+    add_if_value_changed(bson, "topic", topic_);
+    add_if_value_changed(bson, "type", type_);
+
+    add_if_value_changed(bson, "queue_size", queue_size_);
+
+    // d.AddMember("latch", latch_, alloc);
+    BSON_APPEND_BOOL (&bson, "latch", latch_);
+  }
+
   std::string topic_;
   std::string type_;
   // std::string compression_ = "none";

@@ -4,6 +4,10 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 #include <unordered_map>
+
+#include "bson.h"
+
+#include "helper.h"
  
 
 /* 
@@ -122,6 +126,7 @@ public:
   virtual ~ROSBridgeMsg () = default;
 
   virtual rapidjson::Document ToJSON(rapidjson::Document::AllocatorType& alloc) = 0;
+  // virtual void ToJSON(bson_t bson&) = 0;
 
   OpCode op_ = OPCODE_UNDEFINED;
   std::string id_ = "";
@@ -137,6 +142,17 @@ protected:
   void add_if_value_changed(rapidjson::Document &d, rapidjson::Document::AllocatorType& alloc, const char* key, int value){
     if( value != -1 )
       d.AddMember(rapidjson::StringRef(key),value,alloc);
+  }
+
+  void add_if_value_changed(bson_t &bson, const char* key, std::string value){
+    if( !value.empty() )
+      BSON_APPEND_UTF8 (&bson, key, value.c_str());
+  }
+
+  // key must be valid as long as 'd' lives!
+  void add_if_value_changed(bson_t &bson, const char* key, int value){
+    if( value != -1 )
+      BSON_APPEND_INT32 (&bson, key, value);
   }
 
 private:
