@@ -63,13 +63,19 @@ public:
     // std::cout << "[Tests] Service handler received: " << Helper::get_string_from_rapidjson(message) << std::endl;
     std::cout << "[Tests] Service handler received: " << message.id_ << std::endl;
     // std::string data = message["data"].GetString();
-    std::string data = message.msg_json_["data"].GetString();
-    if(data=="a5424890996794277159554918"){
-      messageReceived = true;
-    }
-    else
-    {
-      std::cout << "[Tests] Received value in test message - Maybe from another node publishing on /test?" << std::endl;
+    //
+    std::string data;
+    if(bson_test_mode){
+
+    }else{
+      data = message.msg_json_["data"].GetString();
+      if(data=="a5424890996794277159554918"){
+        messageReceived = true;
+      }
+      else
+      {
+        std::cout << "[Tests] Received value in test message - Maybe from another node publishing on /test?" << std::endl;
+      }
     }
   }
 
@@ -82,6 +88,15 @@ public:
     // int sum = message["values"]["sum"].GetInt();
     // ASSERT_EQ(sum, 42);
     serviceResponseReceived = true;
+  }
+
+  // This shall only be called in bson_only_mode
+  void const_service_response_forty_two(ROSBridgeCallServiceMsg &message, ROSBridgeServiceResponseMsg &response){
+    ASSERT_TRUE(bson_test_mode);
+
+    BSON_APPEND_INT32 (response.values_bson_, "sum", 42);
+    // response.values_json_.AddMember("sum",42,alloc);
+    response.result_ = true;
   }
 
   void const_service_response_forty_two(ROSBridgeCallServiceMsg &message, ROSBridgeServiceResponseMsg &response,
@@ -135,11 +150,13 @@ public:
     portStr >> port;
 
     std::cout << "Testing BSON: " << bson_test_mode << std::endl;
+    if(bson_test_mode)
+      ros.enable_bson_mode();
+
     ASSERT_TRUE(ros.Init(env_ip, port)) << "Failed to initialize ROSBridge - This may indicate that it's not possible to connect to the ROSbridge Server";
 	}
 
   SocketTCPConnection t;
-  // ROSBridge ros{t,true};
   ROSBridge ros{t};
 };
 

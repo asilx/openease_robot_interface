@@ -94,6 +94,11 @@ namespace rosbridge2cpp{
       bool bson_only_mode(){
         return bson_only_mode_;
       }
+      
+      // Enable the BSON only mode.
+      // All communications with the rosbridge server
+      // will be in BSON, instead of JSON
+      void enable_bson_mode(){ bson_only_mode_ = true; }
 
     private:
       // Callback function for the used ITransportLayer.
