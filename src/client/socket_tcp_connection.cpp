@@ -101,12 +101,23 @@ namespace rosbridge2cpp{
       bson_t b;
 
       if(bson_only_mode_){
-        std::cerr << "bson receive not implemented right now" << std::endl;
+        // std::cerr << "bson receive not implemented right now" << std::endl;
+        if(!bson_init_static (&b, recv_buffer.get(), count)){
+          std::cout << "[TCPConnection] Error on BSON parse - Ignoring message" << std::endl;
+          continue;
+        }
+        if(incoming_message_callback_bson_){
+          incoming_message_callback_bson_(b);
+        }
+
         continue;
         /*
         if(!bson_init_static (&b, recv_buffer.get(), count)){
           std::cout << "Error on BSON parse - Ignoring message" << std::endl;
           continue;
+        }
+        if(incoming_message_callback_bson_){
+          incoming_message_callback_bson_(b);
         }
         std::string str = bson_as_json (&b, NULL);
         // if (!bson_init_from_json(&bson, str_repr.c_str(), -1, &error)) {
@@ -124,8 +135,9 @@ namespace rosbridge2cpp{
         j.Parse((char *)recv_buffer.get());
 
         // TODO Use a thread for the message callback?
-        if(callback_function_defined_)
+        if(incoming_message_callback_){
           incoming_message_callback_(j);
+        }
       }
 
 
@@ -140,6 +152,12 @@ namespace rosbridge2cpp{
   void SocketTCPConnection::RegisterIncomingMessageCallback(std::function<void(json&)> fun){
     // TODO unify with report_error
     incoming_message_callback_ = fun;
+    callback_function_defined_ = true;
+  }
+
+  void SocketTCPConnection::RegisterIncomingMessageCallback(std::function<void(bson_t&)> fun){
+    // TODO unify with report_error
+    incoming_message_callback_bson_ = fun;
     callback_function_defined_ = true;
   }
 

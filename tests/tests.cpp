@@ -28,6 +28,7 @@
 using json = rapidjson::Document;
 using namespace rosbridge2cpp;
 
+bool bson_test_mode = (std::getenv("rosb2_test_bson") != NULL);
 /*
  *
  * BEFORE RUNNING THESE TESTS, PLEASE MAKE SURE TO EXECUTE THE FOLLOWING COMMANDS 
@@ -42,6 +43,10 @@ using namespace rosbridge2cpp;
  *  environment variables:
  *    rosb2_cpp_ip = The IP address of the rosbridge server
  *    rosb2_cpp_port = The port of the rosbridge server. Usually, it's 9090.
+ *
+ * If you want to test the BSON mode, start the rosbridge server in bson_only_mode
+ * and set the environment variable:
+ *    rosb2_test_bson = yes
  */
 
 
@@ -129,6 +134,7 @@ public:
     unsigned int port;
     portStr >> port;
 
+    std::cout << "Testing BSON: " << bson_test_mode << std::endl;
     ASSERT_TRUE(ros.Init(env_ip, port)) << "Failed to initialize ROSBridge - This may indicate that it's not possible to connect to the ROSbridge Server";
 	}
 
@@ -158,12 +164,16 @@ TEST_F(ROSBridgeTest, TestTopic) {
 
   TestHandlerMethods thm;
   ASSERT_FALSE(thm.messageReceived);
-  auto test_callback = std::bind(&TestHandlerMethods::publish_subscribe_test_callback, &thm, std::placeholders::_1);
+  auto test_callback = [&thm](const ROSBridgePublishMsg &message){ thm.publish_subscribe_test_callback(message); };
   test_topic.Subscribe(test_callback);
 
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  test_topic.Advertise();
   rapidjson::Document message;
   message.SetObject();
   message.AddMember("data", "Publish from Unit-Tests", message.GetAllocator());
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
   test_topic.Publish(message);
 
   bool testMessageReceived = false;
@@ -184,7 +194,8 @@ TEST_F(ROSBridgeTest, TestTopic) {
 TEST_F(ROSBridgeTest, CallExternalService) {
   TestHandlerMethods thm;
   ASSERT_FALSE(thm.serviceResponseReceived);
-  auto test_callback = std::bind(&TestHandlerMethods::service_response_callback, &thm, std::placeholders::_1);
+
+  auto test_callback = [&thm](const ROSBridgeServiceResponseMsg &message){ thm.service_response_callback(message); };
 
   ROSService test_service_call(ros, "/add_two_ints", "rospy_tutorials/AddTwoInts");
 
@@ -217,16 +228,14 @@ TEST_F(ROSBridgeTest, CallOwnService) {
 
   // Advertise own service
   ROSService test_service_handler(ros, "/rosbridge_testing_service", "rospy_tutorials/AddTwoInts");
-  auto service_request_handler = std::bind(&TestHandlerMethods::const_service_response_forty_two, 
-      &thm, 
-      std::placeholders::_1,
-      std::placeholders::_2,
-      std::placeholders::_3
-      );
+
+  auto service_request_handler = [&thm](ROSBridgeCallServiceMsg &message, ROSBridgeServiceResponseMsg &response,
+      rapidjson::Document::AllocatorType &alloc){ thm.const_service_response_forty_two(message, response, alloc); };
+
   test_service_handler.Advertise(service_request_handler);
 
 
-  auto test_callback = std::bind(&TestHandlerMethods::service_response_callback, &thm, std::placeholders::_1);
+  auto test_callback = [&thm](const ROSBridgeServiceResponseMsg &message){ thm.service_response_callback(message); };
 
   ROSService test_service_call(ros, "/rosbridge_testing_service", "rospy_tutorials/AddTwoInts");
   
@@ -946,18 +955,6 @@ TEST(IndependentMethod, ROSBridgeCallServiceFromBSON) {
 
 TEST(IndependentMethod, ROSBridgeServiceResponseFromBSON) {
   ROSBridgeServiceResponseMsg sr;
-  // json d(rapidjson::kObjectType);
-  // json message(rapidjson::kObjectType);
-  // auto &alloc = d.GetAllocator();
-  // d.AddMember("op","service_response", alloc);
-  // d.AddMember("id","testingid", alloc);
-  // d.AddMember("service","testservice", alloc);
-  // message.AddMember("param","one",alloc);
-  // d.AddMember("values",message,alloc);
-  // d.AddMember("result",true,alloc);
-  // sr.FromJSON(d);
-
-  // std::cout << Helper::get_string_from_rapidjson(d);
 
   bson_t *bson = BCON_NEW(
       "op","service_response",

@@ -30,6 +30,9 @@ namespace rosbridge2cpp{
       // Register a std::function that will be called whenever a new data packet has been received by this TransportLayer.
       virtual void RegisterIncomingMessageCallback(std::function<void(json&)>) = 0;
 
+      // Register a std::function that will be called whenever a new data packet has been received by this TransportLayer.
+      virtual void RegisterIncomingMessageCallback(std::function<void(bson_t&)>) = 0;
+
       // Register a std::function that will be called when errors occur.
       virtual void RegisterErrorCallback(std::function<void(TransportError)>) = 0;
 

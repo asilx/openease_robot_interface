@@ -90,6 +90,11 @@ namespace rosbridge2cpp{
       // IDs for service/topic etc. messages
       long id_counter = 0;
 
+      // Returns true if the bson only mode is activated
+      bool bson_only_mode(){
+        return bson_only_mode_;
+      }
+
     private:
       // Callback function for the used ITransportLayer.
       // It receives the received json that was contained
@@ -97,6 +102,8 @@ namespace rosbridge2cpp{
       //
       // @pre This method assumes a valid json variable
       void IncomingMessageCallback(json &data);
+
+      void IncomingMessageCallback(bson_t &bson);
 
       // Handler Method for reply packet
       void HandleIncomingPublishMessage(ROSBridgePublishMsg &data);

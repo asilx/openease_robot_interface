@@ -21,6 +21,7 @@ public:
   // Unadvertise messages will never be received from the client
   // So we don't need to fill this instance from JSON or other wire-level representations
   bool FromJSON(const rapidjson::Document &data) = delete;
+  bool FromBSON(bson_t &bson) = delete;
 
   rapidjson::Document ToJSON(rapidjson::Document::AllocatorType& alloc){
     rapidjson::Document d(rapidjson::kObjectType);

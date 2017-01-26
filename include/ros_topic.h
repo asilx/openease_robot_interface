@@ -71,6 +71,9 @@ namespace rosbridge2cpp{
       // Please make sure that the message matches the type of the topic,
       // since this will NOT be valided before sending it to the rosbridge.
       void Publish(rapidjson::Value &message);
+      void Publish(bson_t *message);
+
+      std::string GeneratePublishID();
 
       std::string TopicName(){
         return topic_name_;

@@ -8,7 +8,7 @@ namespace rosbridge2cpp{
   }
 
   bool ROSBridge::SendMessage(json &data){
-    if(bson_only_mode_){
+    if(bson_only_mode()){
       // going from JSON to BSON
       std::string str_repr = Helper::get_string_from_rapidjson(data); 
       std::cout << "[ROSBridge] serializing from JSON to BSON for: " << str_repr << std::endl;
@@ -34,7 +34,7 @@ namespace rosbridge2cpp{
 
   bool ROSBridge::SendMessage(ROSBridgeMsg &msg){
 
-    if(bson_only_mode_){
+    if(bson_only_mode()){
       // // going from JSON to BSON
       // std::string str_repr = Helper::get_string_from_rapidjson(data); 
       // std::cout << "[ROSBridge] serializing from JSON to BSON for: " << str_repr << std::endl;
@@ -127,7 +127,7 @@ namespace rosbridge2cpp{
       response.id_ = id;
 
     // TODO Switch for bson
-    if(bson_only_mode_){
+    if(bson_only_mode()){
       std::cerr << "HandleIncomingServiceRequestMessage not implemented for BSON" << std::endl;
       return;
     }
@@ -140,6 +140,48 @@ namespace rosbridge2cpp{
     SendMessage(response);
   }
 
+  // void ROSBridge::HandleIncomingMessage(ROSBridgeMsg &msg){
+
+  // }
+// 
+  void ROSBridge::IncomingMessageCallback(bson_t &bson){
+    // ROSBridgeMsg msg;
+    // msg.FromBSON(bson);
+    // HandleIncomingMessage(msg);
+
+    // Check the message type and dispatch the message properly
+    //
+    // Incoming Topic messages
+    bool key_found = false;
+
+    if(Helper::get_utf8_by_key("op",bson,key_found) == "publish"){
+      ROSBridgePublishMsg m;
+      if(m.FromBSON(bson)){
+        HandleIncomingPublishMessage(m);
+        return;
+      }
+
+      std::cerr << "Failed to parse publish message into class. Skipping message." << std::endl;
+    }
+
+    // Service responses for service we called earlier
+    if(Helper::get_utf8_by_key("op",bson,key_found) == "service_response"){
+      ROSBridgeServiceResponseMsg m;
+      if(m.FromBSON(bson)){
+        HandleIncomingServiceResponseMessage(m);
+        return;
+      }
+      std::cerr << "Failed to parse service_response message into class. Skipping message." << std::endl;
+    }
+
+    // Service Requests to a service that we advertised in ROSService
+    if(Helper::get_utf8_by_key("op",bson,key_found) == "call_service"){
+      ROSBridgeCallServiceMsg m;
+      m.FromBSON(bson);
+      HandleIncomingServiceRequestMessage(m.id_, m);
+    }
+
+  }
   void ROSBridge::IncomingMessageCallback(json &data){
     std::string str_repr = Helper::get_string_from_rapidjson(data);
     std::cout << "[ROSBridge] Received data: " << str_repr << std::endl;
@@ -152,20 +194,21 @@ namespace rosbridge2cpp{
       ROSBridgePublishMsg m;
       if(m.FromJSON(data)){
         HandleIncomingPublishMessage(m);
-      }else{
-        std::cerr << "Failed to parse publish message into class. Skipping message." << std::endl;
+        return;
       }
+
+      std::cerr << "Failed to parse publish message into class. Skipping message." << std::endl;
     }
 
     // Service responses for service we called earlier
     if(std::string(data["op"].GetString(), data["op"].GetStringLength()) == "service_response"){
       ROSBridgeServiceResponseMsg m;
-      m.FromJSON(data);
+      // m.FromJSON(data);
       if(m.FromJSON(data)){
         HandleIncomingServiceResponseMessage(m);
-      }else{
-        std::cerr << "Failed to parse service_response message into class. Skipping message." << std::endl;
+        return;
       }
+      std::cerr << "Failed to parse service_response message into class. Skipping message." << std::endl;
     }
 
     // Service Requests to a service that we advertised in ROSService
@@ -179,11 +222,19 @@ namespace rosbridge2cpp{
   }
 
   bool ROSBridge::Init(std::string ip_addr, int port){
-    std::function<void(json&)> fun = std::bind(&ROSBridge::IncomingMessageCallback, this, std::placeholders::_1);
-    if(bson_only_mode_)
-      transport_layer_.SetTransportMode(ITransportLayer::BSON);
+    // std::function<void(json&)> fun = std::bind(&ROSBridge::IncomingMessageCallback, this, std::placeholders::_1);
 
-    transport_layer_.RegisterIncomingMessageCallback(fun);
+    if(bson_only_mode()){
+      auto fun = [this](bson_t &bson){ IncomingMessageCallback(bson); };
+
+      transport_layer_.SetTransportMode(ITransportLayer::BSON);
+      transport_layer_.RegisterIncomingMessageCallback(fun);
+    }else{
+      // JSON mode
+      auto fun = [this](json &document){ IncomingMessageCallback(document); };
+      transport_layer_.RegisterIncomingMessageCallback(fun);
+    }
+
     return transport_layer_.Init(ip_addr,port);
   }
 

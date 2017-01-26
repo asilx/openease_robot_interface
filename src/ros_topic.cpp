@@ -118,11 +118,7 @@ namespace rosbridge2cpp{
     if(!is_advertised_)
       Advertise();
 
-    std::string publish_id;
-    publish_id.append("publish:");
-    publish_id.append(topic_name_);
-    publish_id.append(":");
-    publish_id.append(std::to_string(++ros_.id_counter));
+    std::string publish_id = GeneratePublishID();
 
     ROSBridgePublishMsg cmd(true);
     cmd.id_ =  publish_id;
@@ -131,5 +127,31 @@ namespace rosbridge2cpp{
     cmd.latch_ =  latch_;
 
     ros_.SendMessage(cmd);
+  }
+
+  void ROSTopic::Publish(bson_t *message){
+    if(!is_advertised_)
+      Advertise();
+
+    assert(message);
+
+    std::string publish_id = GeneratePublishID();
+
+    ROSBridgePublishMsg cmd(true);
+    cmd.id_ =  publish_id;
+    cmd.topic_ =  topic_name_;
+    cmd.msg_bson_ =  message;
+    cmd.latch_ =  latch_;
+
+    ros_.SendMessage(cmd);
+  }
+
+  std::string ROSTopic::GeneratePublishID(){
+    std::string publish_id;
+    publish_id.append("publish:");
+    publish_id.append(topic_name_);
+    publish_id.append(":");
+    publish_id.append(std::to_string(++ros_.id_counter));
+    return publish_id;
   }
 }

@@ -75,5 +75,9 @@ namespace rosbridge2cpp{
         return false;
       }
 
+      bool bson_has_key(bson_t &b, const char *key){
+        return bson_has_field(&b,key);
+      }
+
   };
 }
