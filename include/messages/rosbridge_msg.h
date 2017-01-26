@@ -104,6 +104,34 @@ public:
     return true;
   }
 
+  bool FromBSON(bson_t &bson){
+    if ( !bson_has_field(&bson,"op")){
+      std::cerr << "[ROSBridgeMsg] Received message without 'op' field" <<std::endl;
+      return false;
+    }
+
+    bool key_found = false;
+    std::string op_code = rosbridge2cpp::Helper::get_utf8_by_key("op",bson,key_found);
+    assert(key_found); // should always be true, otherwise this is contradictory to the !bson_has_field check
+    key_found = false;
+
+    auto mapping_iterator = op_code_mapping.find(op_code);
+    if(mapping_iterator == op_code_mapping.end()){
+      std::cerr << "[ROSBridgeMsg] Received message with invalid 'op' field: " << op_code <<std::endl;
+      return false;
+    }
+
+    op_ = mapping_iterator->second;
+
+    if ( !bson_has_field(&bson,"id"))
+      return true; // return true, because id is only optional
+
+    id_ = rosbridge2cpp::Helper::get_utf8_by_key("id",bson,key_found);
+    assert(key_found);
+
+    return true;
+  }
+
   std::string getOpCodeString(){
     if(op_ == OPCODE_UNDEFINED) return "opcode_undefined";
     if(op_ == FRAGMENT) return "fragment";

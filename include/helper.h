@@ -75,6 +75,5 @@ namespace rosbridge2cpp{
         return false;
       }
 
-
   };
 }

@@ -906,3 +906,75 @@ TEST(IndependentMethod, ROSBridgeUnsubscribeToBSON) {
   ASSERT_STREQ(Helper::get_utf8_by_key("topic",b,key_found).c_str(),"topic");
 }
 
+TEST(IndependentMethod, ROSBridgePublishMsgFromBSON) {
+  ROSBridgePublishMsg pm;
+  bson_t *bson = BCON_NEW(
+      "op","publish",
+      "id","testingid",
+      "topic","/test",
+      "type","std_msgs/String",
+      "msg", "{",
+        "data","Hi from Test",
+      "}");
+  pm.FromBSON(*bson);
+
+  bool key_found = false;
+  ASSERT_EQ(pm.op_,ROSBridgeMsg::PUBLISH);
+  ASSERT_EQ(pm.id_,"testingid");
+  ASSERT_EQ(pm.topic_,"/test");
+  ASSERT_EQ(Helper::get_utf8_by_key("msg.data",*pm.full_msg_bson_, key_found),"Hi from Test");
+}
+
+TEST(IndependentMethod, ROSBridgeCallServiceFromBSON) {
+  ROSBridgeCallServiceMsg cs;
+
+  bson_t *bson = BCON_NEW(
+      "op","call_service",
+      "id","testingid",
+      "service","testservice",
+      "args", "{",
+        "param","one",
+      "}");
+  cs.FromBSON(*bson);
+
+  bool key_found = false;
+  ASSERT_EQ(cs.op_,ROSBridgeMsg::CALL_SERVICE);
+  ASSERT_EQ(cs.id_,"testingid");
+  ASSERT_EQ(cs.service_,"testservice");
+  ASSERT_EQ(Helper::get_utf8_by_key("args.param", *cs.full_msg_bson_, key_found),"one");
+}
+
+TEST(IndependentMethod, ROSBridgeServiceResponseFromBSON) {
+  ROSBridgeServiceResponseMsg sr;
+  // json d(rapidjson::kObjectType);
+  // json message(rapidjson::kObjectType);
+  // auto &alloc = d.GetAllocator();
+  // d.AddMember("op","service_response", alloc);
+  // d.AddMember("id","testingid", alloc);
+  // d.AddMember("service","testservice", alloc);
+  // message.AddMember("param","one",alloc);
+  // d.AddMember("values",message,alloc);
+  // d.AddMember("result",true,alloc);
+  // sr.FromJSON(d);
+
+  // std::cout << Helper::get_string_from_rapidjson(d);
+
+  bson_t *bson = BCON_NEW(
+      "op","service_response",
+      "id","testingid",
+      "service","testservice",
+      "result", BCON_BOOL(true),
+      "values", "{",
+        "param","one",
+      "}");
+  sr.FromBSON(*bson);
+
+  bool key_found = false;
+
+  ASSERT_EQ(sr.op_,ROSBridgeMsg::SERVICE_RESPONSE);
+  ASSERT_EQ(sr.id_,"testingid");
+  ASSERT_EQ(sr.service_,"testservice");
+  ASSERT_EQ(Helper::get_utf8_by_key("values.param", *sr.full_msg_bson_, key_found),"one");
+  ASSERT_EQ(sr.result_,true);
+}
+
