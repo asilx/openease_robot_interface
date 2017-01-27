@@ -82,14 +82,16 @@ public:
       ASSERT_EQ(binary_msg[0],'a');
       ASSERT_EQ(binary_msg[1],'b');
       ASSERT_EQ(binary_msg[2],'c');
+      messageReceived = true;
     }else{
       std::string b64data = message.msg_json_["data"].GetString();
 
       if(b64data!="YWJj"){ // YWJj == b64_encode("abc")
         std::cout << "[Tests] Received a different value in test binary message - Maybe from another node publishing on /test?" << std::endl;
+      }else{
+        messageReceived = true;
       }
     }
-    messageReceived = true;
   }
 
   void publish_subscribe_test_callback(const ROSBridgePublishMsg &message){
@@ -356,7 +358,7 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
   // WARNING!
   // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
   // To send the same message multiple times, you have to recreate or copy it!
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 1; i++) {
     ROSTime time = ROSTime::now();
 
     if(bson_test_mode){
