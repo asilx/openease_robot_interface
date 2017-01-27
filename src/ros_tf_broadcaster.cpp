@@ -21,4 +21,8 @@ namespace rosbridge2cpp{
 
     tf_topic_.Publish(tf_message);
   }
+
+  void ROSTFBroadcaster::SendTransform(bson_t &bson){
+    tf_topic_.Publish(&bson);
+  }
 }

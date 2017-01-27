@@ -340,55 +340,87 @@ TEST_F(ROSBridgeTest, CallOwnService) {
 
 
 TEST_F(ROSBridgeTest, TestTFPublish) {
-  if(bson_test_mode) return; // TODO Port
-
   ROSTFBroadcaster tfb(ros);
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   // WARNING!
   // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
   // To send the same message multiple times, you have to recreate or copy it!
-  for (int i = 0; i < 0; i++) {
+  for (int i = 0; i < 100; i++) {
     ROSTime time = ROSTime::now();
 
-    json alloc; // A json document that will only be used to allocate memory in ROSMessageFactory
-    json single_transform = ROSMessageFactory::geometry_msgs_transformstamped(alloc.GetAllocator());
-    single_transform["header"]["seq"].SetInt(0);
-    single_transform["header"]["stamp"]["secs"].SetUint(time.sec_);
-    single_transform["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
-    single_transform["header"]["frame_id"].SetString("/world");
-    single_transform["child_frame_id"].SetString("/foobar");
-    single_transform["transform"]["translation"]["x"].SetDouble(1);
-    single_transform["transform"]["translation"]["y"].SetDouble(0);
-    single_transform["transform"]["translation"]["z"].SetDouble(0);
+    if(bson_test_mode){
+      bson_t *first_transform = BCON_NEW(
+        "transforms",
+        "[",
+          "{",
+            "header", "{",
+              "seq", BCON_INT32(0),
+              "stamp", "{",
+                "secs", BCON_INT32(time.sec_),
+                "nsecs", BCON_INT32(time.nsec_),
+              "}",
+              "frame_id", BCON_UTF8("/world"),
+            "}",
+            "child_frame_id", BCON_UTF8("/foobar"),
+            "transform", "{",
+              "translation", "{",
+                "x", BCON_DOUBLE(1),
+                "y", BCON_DOUBLE(0),
+                "z", BCON_DOUBLE(0),
+              "}",
+              "rotation", "{",
+                "x", BCON_DOUBLE(0),
+                "y", BCON_DOUBLE(0),
+                "z", BCON_DOUBLE(0),
+                "w", BCON_DOUBLE(1),
+              "}",
+            "}",
+          "}",
+        "]"
+      );
 
-    single_transform["transform"]["rotation"]["x"].SetDouble(0);
-    single_transform["transform"]["rotation"]["y"].SetDouble(0);
-    single_transform["transform"]["rotation"]["z"].SetDouble(0);
-    single_transform["transform"]["rotation"]["w"].SetDouble(1);
-    // tfb.SendTransform(single_transform);
+      tfb.SendTransform(*first_transform);
+    }else{
+      json alloc; // A json document that will only be used to allocate memory in ROSMessageFactory
+      json single_transform = ROSMessageFactory::geometry_msgs_transformstamped(alloc.GetAllocator());
+      single_transform["header"]["seq"].SetInt(0);
+      single_transform["header"]["stamp"]["secs"].SetUint(time.sec_);
+      single_transform["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
+      single_transform["header"]["frame_id"].SetString("/world");
+      single_transform["child_frame_id"].SetString("/foobar");
+      single_transform["transform"]["translation"]["x"].SetDouble(1);
+      single_transform["transform"]["translation"]["y"].SetDouble(0);
+      single_transform["transform"]["translation"]["z"].SetDouble(0);
 
-    json second_transform = ROSMessageFactory::geometry_msgs_transformstamped(alloc.GetAllocator());
-    second_transform["header"]["seq"].SetInt(0);
-    second_transform["header"]["stamp"]["secs"].SetUint(time.sec_);
-    second_transform["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
-    second_transform["header"]["frame_id"].SetString("/world");
-    second_transform["child_frame_id"].SetString("/fasel");
-    second_transform["transform"]["translation"]["x"].SetDouble(-1);
-    second_transform["transform"]["translation"]["y"].SetDouble(0);
-    second_transform["transform"]["translation"]["z"].SetDouble(0);
+      single_transform["transform"]["rotation"]["x"].SetDouble(0);
+      single_transform["transform"]["rotation"]["y"].SetDouble(0);
+      single_transform["transform"]["rotation"]["z"].SetDouble(0);
+      single_transform["transform"]["rotation"]["w"].SetDouble(1);
+      // tfb.SendTransform(single_transform);
 
-    second_transform["transform"]["rotation"]["x"].SetDouble(0);
-    second_transform["transform"]["rotation"]["y"].SetDouble(0);
-    second_transform["transform"]["rotation"]["z"].SetDouble(0);
-    second_transform["transform"]["rotation"]["w"].SetDouble(1);
-    // tfb.SendTransform(second_transform);
-    //
-    json transforms;
-    transforms.SetArray();
-    transforms.PushBack(single_transform, transforms.GetAllocator());
-    transforms.PushBack(second_transform, transforms.GetAllocator());
-    tfb.SendTransforms(transforms);
+      json second_transform = ROSMessageFactory::geometry_msgs_transformstamped(alloc.GetAllocator());
+      second_transform["header"]["seq"].SetInt(0);
+      second_transform["header"]["stamp"]["secs"].SetUint(time.sec_);
+      second_transform["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
+      second_transform["header"]["frame_id"].SetString("/world");
+      second_transform["child_frame_id"].SetString("/fasel");
+      second_transform["transform"]["translation"]["x"].SetDouble(-1);
+      second_transform["transform"]["translation"]["y"].SetDouble(0);
+      second_transform["transform"]["translation"]["z"].SetDouble(0);
+
+      second_transform["transform"]["rotation"]["x"].SetDouble(0);
+      second_transform["transform"]["rotation"]["y"].SetDouble(0);
+      second_transform["transform"]["rotation"]["z"].SetDouble(0);
+      second_transform["transform"]["rotation"]["w"].SetDouble(1);
+      // tfb.SendTransform(second_transform);
+      //
+      json transforms;
+      transforms.SetArray();
+      transforms.PushBack(single_transform, transforms.GetAllocator());
+      transforms.PushBack(second_transform, transforms.GetAllocator());
+      tfb.SendTransforms(transforms);
+    }
 
 
     // transform_array.PushBack(single_transform, allocator);

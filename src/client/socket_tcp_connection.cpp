@@ -48,9 +48,9 @@ namespace rosbridge2cpp{
       perror("[TCPConnection] Send failed : ");
       return false;
     }
-    std::cout<<"[TCPConnection] Data send: " << std::endl;
+    std::cout<<"[TCPConnection] Data send ("<<length<<" Bytes): " << std::endl;
     for (int i = 0; i < length; i++) {
-      std::cout << " 0x" << std::setw(2) << std::setfill('0') << std::hex << (int)( data[i] );
+      std::cout << ":" << std::setw(2) << std::setfill('0') << std::hex << (int)( data[i] );
     }
     std::cout<<"[TCPConnection] Data end" << std::endl;
     std::cout << std::endl;
