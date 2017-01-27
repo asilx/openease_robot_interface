@@ -36,6 +36,16 @@ bool bson_test_mode = (std::getenv("rosb2_test_bson") != NULL);
  *   - roslaunch rosbridge_server rosbridge_tcp.launch
  *   - rostopic pub /test std_msgs/String a5424890996794277159554918
  *   - rosrun rospy_tutorials add_two_ints_server
+ *   - rostopic pub /binarytest sensor_msgs/Image "header:
+  seq: 0
+  stamp: {secs: 0, nsecs: 0}
+  frame_id: '/testframe'
+height: 1
+width: 1
+encoding: 'rgb8'
+is_bigendian: 0
+step: 3
+data: 'abc'"
  *
  * Important:
  *  Please note that ROSBridge does alot on an active TCP/IP connection to a rosbridge server.
