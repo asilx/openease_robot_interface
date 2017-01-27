@@ -15,6 +15,7 @@ namespace rosbridge2cpp{
   typedef std::function<void(ROSBridgePublishMsg&)> FunVrROSPublishMsg;
   typedef std::function<void(ROSBridgeServiceResponseMsg&)> FunVrROSServiceResponseMsg;
   typedef std::function<void(ROSBridgeCallServiceMsg&, ROSBridgeServiceResponseMsg&, rapidjson::Document::AllocatorType&)> FunVrROSCallServiceMsgrROSServiceResponseMsgrAllocator;
+  typedef std::function<void(ROSBridgeCallServiceMsg&, ROSBridgeServiceResponseMsg&)> FunVrROSCallServiceMsgrROSServiceResponseMsg;
   // typedef std::function<json(json&)> FunJSONcrJSON;
 
   enum class TransportError{ SOCKET_ERROR, CONNECTION_CLOSED };

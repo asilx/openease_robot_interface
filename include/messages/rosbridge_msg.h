@@ -154,7 +154,7 @@ public:
   virtual ~ROSBridgeMsg () = default;
 
   virtual rapidjson::Document ToJSON(rapidjson::Document::AllocatorType& alloc) = 0;
-  // virtual void ToJSON(bson_t bson&) = 0;
+  virtual void ToBSON(bson_t& bson) = 0;
 
   OpCode op_ = OPCODE_UNDEFINED;
   std::string id_ = "";

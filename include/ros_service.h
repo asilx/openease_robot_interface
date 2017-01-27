@@ -29,6 +29,7 @@ namespace rosbridge2cpp{
       // This method will only be used when using rapidjson, since we need to use
       // the allocator of rapidjson to avoid copy operations.
       void Advertise(FunVrROSCallServiceMsgrROSServiceResponseMsgrAllocator callback);
+      void Advertise(FunVrROSCallServiceMsgrROSServiceResponseMsg callback);
 
       // Unadvertise an advertised service
       // Will do nothing if no service has been advertised before in this instance

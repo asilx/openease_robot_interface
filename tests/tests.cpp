@@ -66,16 +66,21 @@ public:
     //
     std::string data;
     if(bson_test_mode){
+      bool key_found;
+      data = Helper::get_utf8_by_key("msg.data",*message.full_msg_bson_,key_found);
+      ASSERT_TRUE(key_found) << "[Tests] 'data' not found in received message" ;
+
 
     }else{
       data = message.msg_json_["data"].GetString();
-      if(data=="a5424890996794277159554918"){
-        messageReceived = true;
-      }
-      else
-      {
-        std::cout << "[Tests] Received value in test message - Maybe from another node publishing on /test?" << std::endl;
-      }
+    }
+
+    if(data=="a5424890996794277159554918"){
+      messageReceived = true;
+    }
+    else
+    {
+      std::cout << "[Tests] Received value in test message - Maybe from another node publishing on /test?" << std::endl;
     }
   }
 
@@ -187,11 +192,21 @@ TEST_F(ROSBridgeTest, TestTopic) {
 
   std::this_thread::sleep_for(std::chrono::milliseconds(10));
   test_topic.Advertise();
-  rapidjson::Document message;
-  message.SetObject();
-  message.AddMember("data", "Publish from Unit-Tests", message.GetAllocator());
-  std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  test_topic.Publish(message);
+  std::this_thread::sleep_for(std::chrono::milliseconds(10)); // TODO test without to enforce packets with multiple bson docs in it
+
+  if(bson_test_mode){
+    bson_t *message = BCON_NEW(
+       "data", "Publish from Unit-Tests"
+        );
+    test_topic.Publish(message);
+
+  }else{
+    rapidjson::Document message;
+    message.SetObject();
+    message.AddMember("data", "Publish from Unit-Tests", message.GetAllocator());
+    test_topic.Publish(message);
+  }
+
 
   bool testMessageReceived = false;
   auto l = [&testMessageReceived, &thm]() -> bool{ 
@@ -208,6 +223,7 @@ TEST_F(ROSBridgeTest, TestTopic) {
   ASSERT_TRUE(testMessageReceived) << "Didn't receive the topic test message one second after publish";
 }
 
+
 TEST_F(ROSBridgeTest, CallExternalService) {
   TestHandlerMethods thm;
   ASSERT_FALSE(thm.serviceResponseReceived);
@@ -216,12 +232,20 @@ TEST_F(ROSBridgeTest, CallExternalService) {
 
   ROSService test_service_call(ros, "/add_two_ints", "rospy_tutorials/AddTwoInts");
 
-  rapidjson::Document service_params;
-  service_params.SetObject();
-  service_params.AddMember("a", 1, service_params.GetAllocator());
-  service_params.AddMember("b", 41, service_params.GetAllocator());
+  if(bson_test_mode){
+    bson_t *service_params = BCON_NEW(
+       "a", BCON_INT32(1),
+       "b", BCON_INT32(41)
+        );
+    test_service_call.CallService(service_params, test_callback);
+  }else{
+    rapidjson::Document service_params;
+    service_params.SetObject();
+    service_params.AddMember("a", 1, service_params.GetAllocator());
+    service_params.AddMember("b", 41, service_params.GetAllocator());
+    test_service_call.CallService(service_params, test_callback);
+  }
   
-  test_service_call.CallService(service_params, test_callback);
 
   bool testResponseReceived = false;
   // Wait a second to check if the message has been received
@@ -246,21 +270,34 @@ TEST_F(ROSBridgeTest, CallOwnService) {
   // Advertise own service
   ROSService test_service_handler(ros, "/rosbridge_testing_service", "rospy_tutorials/AddTwoInts");
 
-  auto service_request_handler = [&thm](ROSBridgeCallServiceMsg &message, ROSBridgeServiceResponseMsg &response,
-      rapidjson::Document::AllocatorType &alloc){ thm.const_service_response_forty_two(message, response, alloc); };
+  if(bson_test_mode){
+    auto service_request_handler = [&thm](ROSBridgeCallServiceMsg &message, ROSBridgeServiceResponseMsg &response){ thm.const_service_response_forty_two(message, response); };
+    test_service_handler.Advertise(service_request_handler);
+  }else{
+    auto service_request_handler = [&thm](ROSBridgeCallServiceMsg &message, ROSBridgeServiceResponseMsg &response,
+        rapidjson::Document::AllocatorType &alloc){ thm.const_service_response_forty_two(message, response, alloc); };
+    test_service_handler.Advertise(service_request_handler);
+  }
 
-  test_service_handler.Advertise(service_request_handler);
 
 
   auto test_callback = [&thm](const ROSBridgeServiceResponseMsg &message){ thm.service_response_callback(message); };
 
   ROSService test_service_call(ros, "/rosbridge_testing_service", "rospy_tutorials/AddTwoInts");
   
-  rapidjson::Document service_params;
-  service_params.SetObject();
-  service_params.AddMember("a", 1, service_params.GetAllocator());
-  service_params.AddMember("b", 41, service_params.GetAllocator());
-  test_service_call.CallService(service_params, test_callback);
+  if(bson_test_mode){
+    bson_t *service_params = BCON_NEW(
+       "a", BCON_INT32(1),
+       "b", BCON_INT32(41)
+        );
+    test_service_call.CallService(service_params, test_callback);
+  }else{
+    rapidjson::Document service_params;
+    service_params.SetObject();
+    service_params.AddMember("a", 1, service_params.GetAllocator());
+    service_params.AddMember("b", 41, service_params.GetAllocator());
+    test_service_call.CallService(service_params, test_callback);
+  }
 
   bool testResponseReceived = false;
   // Wait a second to check if the message has been received
@@ -277,7 +314,11 @@ TEST_F(ROSBridgeTest, CallOwnService) {
   ASSERT_TRUE(testResponseReceived) << "Didn't receive the service response one second after service request";
   test_service_handler.Unadvertise();
 }
+
+
 TEST_F(ROSBridgeTest, TestTFPublish) {
+  if(bson_test_mode) return; // TODO Port
+
   ROSTFBroadcaster tfb(ros);
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
@@ -437,32 +478,66 @@ std::string base64_encode(BYTE const* buf, unsigned int bufLen) {
 
 
 TEST_F(ROSBridgeTest, PublishImage) {
+  // if(bson_test_mode) return; // TODO port
   ROSTopic imagetopic(ros, "/imagetest", "sensor_msgs/Image");
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
   // WARNING!
   // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
   // To send the same message multiple times, you have to recreate or copy it!
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 1000; i++) {
     ROSTime time = ROSTime::now();
+    if(bson_test_mode){
+      bson_t *image_msg;
+      image_msg = BCON_NEW(
+        "header", "{",
+          "seq", BCON_INT32(0),
+          "stamp", "{",
+            "secs", BCON_INT32(time.sec_),
+            "nsecs", BCON_INT32(time.nsec_),
+          "}",
+          "frame_id", BCON_UTF8("/camera_frame"),
+        "}",
+        "height",BCON_INT32(1),
+        "width",BCON_INT32(1),
+        "encoding",BCON_UTF8("rgb8"),
+        "step",BCON_INT32(3)
+      );
+      uint8_t *image;
+      int color_to_show = i % 3;
+      switch(color_to_show) {
+        case 0:
+          image = new uint8_t[3]{255,0,0}; // Please note that this data has to be free'd by you
+          break;
+        case 1:
+          image = new uint8_t[3]{0,255,0}; // Please note that this data has to be free'd by you
+          break;
+        case 2:
+          image = new uint8_t[3]{0,0,255}; // Please note that this data has to be free'd by you
+          break;
+      }
+      ASSERT_TRUE(bson_append_binary(image_msg,"data",-1,BSON_SUBTYPE_BINARY,image,3));
+      imagetopic.Publish(image_msg);
+      free(image);
+    }else{
+      json alloc; // A json document that will only be used to allocate memory in ROSMessageFactory
+      json image_msg = ROSMessageFactory::sensor_msgs_image(alloc.GetAllocator());
+      image_msg["header"]["seq"].SetInt(0);
+      image_msg["header"]["stamp"]["secs"].SetUint(time.sec_);
+      image_msg["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
+      image_msg["header"]["frame_id"].SetString("/camera_frame");
+      image_msg["height"].SetUint(1);
+      image_msg["width"].SetUint(1);
+      image_msg["encoding"].SetString("rgb8");
+      image_msg["step"].SetUint(3);
+      BYTE image[3] = {0,1,2};
+      std::string base64_data = base64_encode(((const BYTE*) &image), 3); // 20,20,20
 
-    json alloc; // A json document that will only be used to allocate memory in ROSMessageFactory
-    json image_msg = ROSMessageFactory::sensor_msgs_image(alloc.GetAllocator());
-    image_msg["header"]["seq"].SetInt(0);
-    image_msg["header"]["stamp"]["secs"].SetUint(time.sec_);
-    image_msg["header"]["stamp"]["nsecs"].SetUint(time.nsec_);
-    image_msg["header"]["frame_id"].SetString("/camera_frame");
-    image_msg["height"].SetUint(1);
-    image_msg["width"].SetUint(2);
-    image_msg["encoding"].SetString("rgb8");
-    image_msg["step"].SetUint(6);
-    BYTE image[3] = {0,1,2};
-    std::string base64_data = base64_encode(((const BYTE*) &image), 3); // 20,20,20
+      image_msg["data"].SetString(base64_data.c_str(), base64_data.length(), alloc.GetAllocator());
 
-    image_msg["data"].SetString(base64_data.c_str(), base64_data.length(), alloc.GetAllocator());
-
-    std::cout << "JSON for image" << Helper::get_string_from_rapidjson(image_msg) << std::endl;
-    imagetopic.Publish(image_msg);
+      std::cout << "JSON for image" << Helper::get_string_from_rapidjson(image_msg) << std::endl;
+      imagetopic.Publish(image_msg);
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
   }
   // TODO test for success

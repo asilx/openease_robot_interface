@@ -61,9 +61,25 @@ namespace rosbridge2cpp{
     ros_.SendMessage(cmd);
 
     is_advertised_ = true;
-
-
   }
+
+  void ROSService::Advertise(FunVrROSCallServiceMsgrROSServiceResponseMsg callback){
+    if(is_advertised_) 
+      return;
+
+    // Register on ROSBridge
+    ros_.RegisterServiceRequestCallback(service_name_, callback);
+
+    ROSBridgeAdvertiseServiceMsg cmd(true);
+    cmd.service_ = service_name_;
+    cmd.type_ =  service_type_;
+
+    ros_.SendMessage(cmd);
+
+    is_advertised_ = true;
+  }
+
+
   // Unadvertise an advertised service
   void ROSService::Unadvertise(){
     if(!is_advertised_) 

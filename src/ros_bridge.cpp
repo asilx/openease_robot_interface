@@ -35,6 +35,14 @@ namespace rosbridge2cpp{
   bool ROSBridge::SendMessage(ROSBridgeMsg &msg){
 
     if(bson_only_mode()){
+      bson_t message = BSON_INITIALIZER;
+      msg.ToBSON(message);
+      const uint8_t *bson_data = bson_get_data (&message);
+      uint32_t bson_size = message.len;
+      bool retval = transport_layer_.SendMessage(bson_data,bson_size);
+      bson_destroy(&message); // TODO needed?
+      return retval;
+
       // // going from JSON to BSON
       // std::string str_repr = Helper::get_string_from_rapidjson(data); 
       // std::cout << "[ROSBridge] serializing from JSON to BSON for: " << str_repr << std::endl;
@@ -51,8 +59,8 @@ namespace rosbridge2cpp{
       // uint32_t bson_size = bson.len;
       // bool retval = transport_layer_.SendMessage(bson_data,bson_size);
       // bson_destroy(&bson);
-      std::cerr << "Not implemented" << std::endl;
-      return false;
+      // std::cerr << "Not implemented" << std::endl;
+      // return false;
     }
 
 
@@ -76,9 +84,16 @@ namespace rosbridge2cpp{
       return;
     }
 
-    if ( data.msg_json_.IsNull()){
-      std::cerr << "[ROSBridge] Received message for topic " << incoming_topic_name << ", but 'msg' field is missing. Aborting" <<std::endl;
-      return;
+    if(bson_only_mode()){
+      if ( !data.full_msg_bson_){
+        std::cerr << "[ROSBridge] Received message for topic " << incoming_topic_name << ", but full message field is missing. Aborting" <<std::endl;
+        return;
+      }
+    }else{
+      if ( data.msg_json_.IsNull()){
+        std::cerr << "[ROSBridge] Received message for topic " << incoming_topic_name << ", but 'msg' field is missing. Aborting" <<std::endl;
+        return;
+      }
     }
 
     // Iterate over all registered callbacks for the given topic
@@ -114,29 +129,35 @@ namespace rosbridge2cpp{
   void ROSBridge::HandleIncomingServiceRequestMessage(std::string id, ROSBridgeCallServiceMsg &data){
     std::string &incoming_service = data.service_;
 
-    auto service_request_callback_it =  registered_service_request_callbacks_.find(incoming_service);
-
-    if ( service_request_callback_it == registered_service_request_callbacks_.end()) {
-      std::cerr << "[ROSBridge] Received service request for service :" << incoming_service << " where no callback has been registered before" <<std::endl;
-      return;
-    }
-
     ROSBridgeServiceResponseMsg response(true);
     response.service_ = incoming_service;
+
     if(id!="")
       response.id_ = id;
 
-    // TODO Switch for bson
     if(bson_only_mode()){
-      std::cerr << "HandleIncomingServiceRequestMessage not implemented for BSON" << std::endl;
-      return;
+      auto service_request_callback_it =  registered_service_request_callbacks_bson_.find(incoming_service);
+
+      if ( service_request_callback_it == registered_service_request_callbacks_bson_.end()) {
+        std::cerr << "[ROSBridge] Received service request for service :" << incoming_service << " where no callback has been registered before" <<std::endl;
+        return;
+      }
+      response.values_bson_ = bson_new();
+      service_request_callback_it->second(data,response);
+    }else{
+      auto service_request_callback_it =  registered_service_request_callbacks_.find(incoming_service);
+
+      if ( service_request_callback_it == registered_service_request_callbacks_.end()) {
+        std::cerr << "[ROSBridge] Received service request for service :" << incoming_service << " where no bson callback has been registered before" <<std::endl;
+        return;
+      }
+      response.values_json_.SetObject();
+      rapidjson::Document response_allocator;
+
+      // Execute the callback for the given service id
+      service_request_callback_it->second(data,response,response_allocator.GetAllocator());
     }
 
-    response.values_json_.SetObject();
-    rapidjson::Document response_allocator;
-
-    // Execute the callback for the given service id
-    service_request_callback_it->second(data,response,response_allocator.GetAllocator());
     SendMessage(response);
   }
 
@@ -248,6 +269,10 @@ namespace rosbridge2cpp{
 
   void ROSBridge::RegisterServiceRequestCallback(std::string service_name, FunVrROSCallServiceMsgrROSServiceResponseMsgrAllocator fun){
     registered_service_request_callbacks_[service_name] = fun;
+  }
+
+  void ROSBridge::RegisterServiceRequestCallback(std::string service_name, FunVrROSCallServiceMsgrROSServiceResponseMsg fun){
+    registered_service_request_callbacks_bson_[service_name] = fun;
   }
 
 
