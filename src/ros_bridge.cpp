@@ -144,6 +144,7 @@ namespace rosbridge2cpp{
       }
       response.values_bson_ = bson_new();
       service_request_callback_it->second(data,response);
+      SendMessage(response);
     }else{
       auto service_request_callback_it =  registered_service_request_callbacks_.find(incoming_service);
 
@@ -156,9 +157,9 @@ namespace rosbridge2cpp{
 
       // Execute the callback for the given service id
       service_request_callback_it->second(data,response,response_allocator.GetAllocator());
+      SendMessage(response);
     }
 
-    SendMessage(response);
   }
 
   // void ROSBridge::HandleIncomingMessage(ROSBridgeMsg &msg){

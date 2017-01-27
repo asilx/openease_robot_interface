@@ -61,18 +61,24 @@ public:
 
   void publish_subscribe_binary_callback(const ROSBridgePublishMsg &message){
     std::cout << "[Tests] Binary subscription handler received: " << message.id_ << std::endl;
-    // bool key_found;
-    // Helper::get_utf8_by_key("msg.data",*message.full_msg_bson_,key_found);
-    ASSERT_TRUE(Helper::bson_has_key(*message.full_msg_bson_,"msg.data"));
-    // ASSERT_TRUE(key_found) << "[Tests] 'data' not found in received message" ;
-    bool key_found = false;
-    uint32_t binary_data_length = 0;
-    const uint8_t *binary_msg =  Helper::get_binary_by_key("msg.data", *message.full_msg_bson_, binary_data_length, key_found);
-    ASSERT_TRUE(key_found);
-    ASSERT_EQ(binary_data_length,3);
-    ASSERT_EQ(binary_msg[0],'a');
-    ASSERT_EQ(binary_msg[1],'b');
-    ASSERT_EQ(binary_msg[2],'c');
+
+    if(bson_test_mode){
+      ASSERT_TRUE(Helper::bson_has_key(*message.full_msg_bson_,"msg.data"));
+      bool key_found = false;
+      uint32_t binary_data_length = 0;
+      const uint8_t *binary_msg =  Helper::get_binary_by_key("msg.data", *message.full_msg_bson_, binary_data_length, key_found);
+      ASSERT_TRUE(key_found);
+      ASSERT_EQ(binary_data_length,3);
+      ASSERT_EQ(binary_msg[0],'a');
+      ASSERT_EQ(binary_msg[1],'b');
+      ASSERT_EQ(binary_msg[2],'c');
+    }else{
+      std::string b64data = message.msg_json_["data"].GetString();
+
+      if(b64data!="YWJj"){ // YWJj == b64_encode("abc")
+        std::cout << "[Tests] Received a different value in test binary message - Maybe from another node publishing on /test?" << std::endl;
+      }
+    }
     messageReceived = true;
   }
 
