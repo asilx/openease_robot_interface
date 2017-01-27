@@ -59,6 +59,23 @@ public:
   TestHandlerMethods () = default;
   ~TestHandlerMethods () = default;
 
+  void publish_subscribe_binary_callback(const ROSBridgePublishMsg &message){
+    std::cout << "[Tests] Binary subscription handler received: " << message.id_ << std::endl;
+    // bool key_found;
+    // Helper::get_utf8_by_key("msg.data",*message.full_msg_bson_,key_found);
+    ASSERT_TRUE(Helper::bson_has_key(*message.full_msg_bson_,"msg.data"));
+    // ASSERT_TRUE(key_found) << "[Tests] 'data' not found in received message" ;
+    bool key_found = false;
+    uint32_t binary_data_length = 0;
+    const uint8_t *binary_msg =  Helper::get_binary_by_key("msg.data", *message.full_msg_bson_, binary_data_length, key_found);
+    ASSERT_TRUE(key_found);
+    ASSERT_EQ(binary_data_length,3);
+    ASSERT_EQ(binary_msg[0],'a');
+    ASSERT_EQ(binary_msg[1],'b');
+    ASSERT_EQ(binary_msg[2],'c');
+    messageReceived = true;
+  }
+
   void publish_subscribe_test_callback(const ROSBridgePublishMsg &message){
     // std::cout << "[Tests] Service handler received: " << Helper::get_string_from_rapidjson(message) << std::endl;
     std::cout << "[Tests] Service handler received: " << message.id_ << std::endl;
@@ -475,8 +492,34 @@ std::string base64_encode(BYTE const* buf, unsigned int bufLen) {
 //     }
 //     return out;
 // }
+//
+TEST_F(ROSBridgeTest, TestBinaryTopic) {
+  ROSTopic test_topic(ros, "/binarytest", "sensor_msgs/Image");
+
+  TestHandlerMethods thm;
+  ASSERT_FALSE(thm.messageReceived);
+  auto test_callback = [&thm](const ROSBridgePublishMsg &message){ thm.publish_subscribe_binary_callback(message); };
+  test_topic.Subscribe(test_callback);
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+
+  bool testMessageReceived = false;
+  auto l = [&testMessageReceived, &thm]() -> bool{ 
+    if(thm.messageReceived){
+      testMessageReceived = true; 
+      return true;
+    }
+    return false;
+     
+  };
+
+  wait_for_x_ms_for_y_steps(100, 10, l);
+  test_topic.Unadvertise();
+  std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  ASSERT_TRUE(testMessageReceived) << "Didn't receive the binary topic test message one second after publish";
+}
 
 
+/*
 TEST_F(ROSBridgeTest, PublishImage) {
   // if(bson_test_mode) return; // TODO port
   ROSTopic imagetopic(ros, "/imagetest", "sensor_msgs/Image");
@@ -542,7 +585,7 @@ TEST_F(ROSBridgeTest, PublishImage) {
   }
   // TODO test for success
 }
-
+*/
 
 /*
  TEST(IndependentMethod, test_binary) {

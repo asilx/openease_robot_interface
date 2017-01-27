@@ -75,7 +75,31 @@ namespace rosbridge2cpp{
         return false;
       }
 
-      bool bson_has_key(bson_t &b, const char *key){
+      // dot_notation refers to MongoDB dot notation¬
+      // returns nullptr and sets success to 'false' if suitable data can't be found via the dot notation
+      //
+      // binary_data_length holds the size of the buffer where the returned pointer points to.
+      static const uint8_t * get_binary_by_key(const char *dot_notation, bson_t &b, uint32_t &binary_data_length, bool &success){
+        bson_iter_t iter;
+        bson_iter_t val;
+
+        if (bson_iter_init (&iter, &b) &&
+            bson_iter_find_descendant (&iter, dot_notation, &val) &&
+            BSON_ITER_HOLDS_BINARY (&val)) {
+          std::cerr << " FUCKING FOOBAR " << std::endl;
+          bson_subtype_t subtype;
+          const uint8_t *binary;
+
+          bson_iter_binary(&val, &subtype, &binary_data_length, &binary);
+          assert( binary );
+          success = true;
+          return binary;
+        }
+        success = false;
+        return nullptr;
+      }
+
+      bool static bson_has_key(bson_t &b, const char *key){
         return bson_has_field(&b,key);
       }
 
