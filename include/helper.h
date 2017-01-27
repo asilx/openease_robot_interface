@@ -86,7 +86,6 @@ namespace rosbridge2cpp{
         if (bson_iter_init (&iter, &b) &&
             bson_iter_find_descendant (&iter, dot_notation, &val) &&
             BSON_ITER_HOLDS_BINARY (&val)) {
-          std::cerr << " FUCKING FOOBAR " << std::endl;
           bson_subtype_t subtype;
           const uint8_t *binary;
 

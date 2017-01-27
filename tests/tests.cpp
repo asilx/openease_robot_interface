@@ -225,9 +225,9 @@ TEST_F(ROSBridgeTest, TestTopic) {
   test_topic.Subscribe(test_callback);
 
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  test_topic.Advertise();
-  std::this_thread::sleep_for(std::chrono::milliseconds(10)); // TODO test without to enforce packets with multiple bson docs in it
+  // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  // test_topic.Advertise();
+  // std::this_thread::sleep_for(std::chrono::milliseconds(10)); // TODO test without to enforce packets with multiple bson docs in it
 
   if(bson_test_mode){
     bson_t *message = BCON_NEW(
@@ -358,7 +358,7 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
   // WARNING!
   // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
   // To send the same message multiple times, you have to recreate or copy it!
-  for (int i = 0; i < 1; i++) {
+  for (int i = 0; i < 100; i++) {
     ROSTime time = ROSTime::now();
 
     if(bson_test_mode){
