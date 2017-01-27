@@ -364,7 +364,7 @@ TEST_F(ROSBridgeTest, TestTFPublish) {
   // WARNING!
   // Rapidjson has move semantics and the msg part of a published message will be moved to a rapidjson::document in the sending process
   // To send the same message multiple times, you have to recreate or copy it!
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 10; i++) {
     ROSTime time = ROSTime::now();
 
     if(bson_test_mode){
