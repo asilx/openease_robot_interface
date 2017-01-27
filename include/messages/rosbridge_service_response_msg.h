@@ -129,7 +129,7 @@ public:
   // in bson that are still valid to use when the parent document
   // might get modified.
   //
-  // This ptr will be set, when ToJSON is called and the ServiceResponse carries 'values'
+  // This ptr will be set, when ToBSON is called and the ServiceResponse carries 'values'
   // Otherwise, it stays as a nullptr
   bson_t *full_msg_bson_ = nullptr;
 

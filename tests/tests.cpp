@@ -125,8 +125,14 @@ public:
     // std::cout << "[Tests] Service response received: " << str_repr << std::endl;
     // bool result = message["result"].GetBool();
     ASSERT_TRUE(message.result_);
-    // int sum = message["values"]["sum"].GetInt();
-    // ASSERT_EQ(sum, 42);
+    if(bson_test_mode){
+      bool key_found = false;
+      ASSERT_EQ(Helper::get_int32_by_key("values.sum",*message.full_msg_bson_,key_found),42);
+      ASSERT_TRUE(key_found);
+    }else{
+      int sum = message.values_json_["sum"].GetInt();
+      ASSERT_EQ(sum, 42);
+    }
     serviceResponseReceived = true;
   }
 
