@@ -1,5 +1,5 @@
 # rosbridge2cpp [![Build Status](https://travis-ci.org/Sanic/travis-cpp11-test.svg?branch=master)](https://travis-ci.org/Sanic/travis-cpp11-test)
-A C++11 library to interface ROS via rosbridge
+A C++11 library to interface ROS via rosbridge or openEASE cloud engine
 
 This library can be used to talk to [ROS](http://www.ros.org/) via [rosbridge](http://wiki.ros.org/rosbridge_suite).
 It enables you to communicate with ROS even if you don't have the full ROS Stack on your machine available (for example, when you are using Windows).
@@ -20,7 +20,8 @@ make
 ## Usage
 Checkout [src/client/client.cpp](src/client/client.cpp) for an example implementation based on UNIX sockets.
 On the server-side, please ensure that you're starting the TCP variant of the rosbridge server.
-Websockets are NOT supported.
+Checkout [src/client/client_openease.cpp](src/client/client_openease.cpp) for an example implementation for openEASE.
+Websockets are supported.
 
 ## Running the unit tests
 Please ensure that the you executed cmake with '-Dtest=on' before you continue.

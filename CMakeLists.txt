@@ -8,7 +8,6 @@
 
 cmake_minimum_required(VERSION 2.8)
 option(test "Build all tests." OFF) # Makes boolean 'test' available.
-
 set(PROJECT_NAME rosbridge2cpp)
 project(${PROJECT_NAME})
 
@@ -16,10 +15,16 @@ set(CMAKE_CXX_FLAGS "-g -Wall")
 add_definitions(-std=c++11)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
+
+FIND_PACKAGE(CURL)
+find_package( Boost REQUIRED COMPONENTS program_options regex )
+include_directories( ${Boost_INCLUDE_DIRS} )
+INCLUDE_DIRECTORIES(${CURL_INCLUDE_DIR})
+
 INCLUDE_DIRECTORIES( include)
 ADD_EXECUTABLE( rosbridge2cpp-client
 	src/client/client.cpp 
-	src/client/socket_tcp_connection.cpp 
+	src/client/socket_tcp_connection.cpp
 	src/ros_bridge.cpp 
 	src/ros_topic.cpp 
 	src/ros_service.cpp 
@@ -27,13 +32,31 @@ ADD_EXECUTABLE( rosbridge2cpp-client
 )
 
 ADD_LIBRARY( rosbridge2cpp SHARED
-	src/client/socket_tcp_connection.cpp 
+	src/client/socket_tcp_connection.cpp
 	src/ros_bridge.cpp 
 	src/ros_topic.cpp 
 	src/ros_service.cpp 
 	src/ros_tf_broadcaster.cpp 
 )
 
+ADD_EXECUTABLE( oebridge2cpp-client
+	src/client/client_openease.cpp 
+        src/client/socket_web_connection.cpp 
+	src/ros_bridge.cpp 
+	src/ros_topic.cpp 
+	src/ros_service.cpp 
+	src/ros_tf_broadcaster.cpp 
+)
+
+ADD_LIBRARY( oebridge2cpp SHARED
+        src/client/socket_web_connection.cpp 
+	src/ros_bridge.cpp 
+	src/ros_topic.cpp 
+	src/ros_service.cpp 
+	src/ros_tf_broadcaster.cpp 
+)
+
+target_link_libraries(oebridge2cpp-client -lssl -lcrypto -lpthread -lboost_system ${Boost_PROGRAM_OPTIONS_LIBRARY} ${Boost_REGEX_LIBRARY} ${CURL_LIBRARIES} )
 ################################
 # Testing
 ################################
