@@ -58,8 +58,61 @@ namespace rosbridge2cpp{
 
   bool SocketWebConnection::Init(std::string web_socket_addr, int p_port)
   {
-      Authenticate();
-      SocketWebConnection::Refresher();
+      // if it is websocket address then it is not a openease but a rosbridge with ws
+      if (web_socket_addr.find("http") == std::string::npos) { 
+        web_addr_ = web_socket_addr;
+
+        if(web_addr_.substr(0,2) == "wss")
+        {
+          is_secure = true;
+          client_secure = new WssClient(web_addr_.substr(6), false);
+          client_secure->on_open=[this]() {
+            is_socket_opened = true;           
+          };
+    
+          client_secure->on_close=[](int status, const string&) {
+            cout << "Client: Closed connection with status code " << status << endl;
+         };
+       }
+       else
+       {
+         is_secure = false;
+         client = new WsClient(web_addr_.substr(5));
+
+         client->on_open=[this]() {
+           is_socket_opened = true;
+         };
+    
+         client->on_close=[](int status, const string& ) {
+           cout << "Client: Closed connection with status code " << status << endl;
+         };
+       }
+
+       thread socket_thread([this](){  
+            if(is_secure)
+            {
+              client_secure->on_message=[this](shared_ptr<WssClient::Message> message) {
+                handler_incoming(message->string());
+              };
+              client_secure->start();
+            }
+            else
+            {
+              client->on_message=[this](shared_ptr<WsClient::Message> message) {
+                handler_incoming(message->string());
+              };     
+              client->start();
+            }
+            
+         });  
+         socket_thread.detach();
+
+      }
+      //if it is normal http address, that means it is openease so authenticate and set up the watch dog refresher
+      else { 
+        Authenticate();
+        SocketWebConnection::Refresher();
+      }
       return true;
   }
 
